@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>CivicFix</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="auth-container">
+
+        <div class="auth-card">
+
+            <div class="brand">
+                <h1>CivicFix</h1>
+                <p>Smart Civic Issue & Road Hazard Tracker</p>
+            </div>
+
+
+            <!-- Login -->
+            <div id="loginSection">
+
+                <h2>Citizen Login</h2>
+
+                <form id="loginForm">
+
+                    <div class="form-group">
+                        <label for="loginEmail">Gmail Address</label>
+                        <input
+                            type="email"
+                            id="loginEmail"
+                            placeholder="example@gmail.com"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="loginPassword">Password</label>
+                        <input
+                            type="password"
+                            id="loginPassword"
+                            placeholder="Enter your password"
+                            required
+                        >
+                    </div>
+
+                    <button
+                        type="button"
+                        id="forgotPasswordButton"
+                        class="forgot-password">
+                        Forgot Password?
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="auth-button">
+                        Login
+                    </button>
+
+                </form>
+
+                <p id="loginMessage" class="message"></p>
+
+                <p class="switch-text">
+                    Don't have an account?
+                    <button
+                        type="button"
+                        id="showRegister">
+                        Create Account
+                    </button>
+                </p>
+
+            </div>
+
+
+            <!-- Forgot Password -->
+            <div
+                id="forgotPasswordSection"
+                style="display: none;">
+
+                <h2>Forgot Password</h2>
+
+                <p>
+                    Enter your registered Gmail address to receive an OTP.
+                </p>
+
+                <form id="forgotPasswordForm">
+
+                    <div class="form-group">
+                        <label for="forgotEmail">
+                            Gmail Address
+                        </label>
+
+                        <input
+                            type="email"
+                            id="forgotEmail"
+                            placeholder="example@gmail.com"
+                            required
+                        >
+                    </div>
+
+                    <button
+                        type="submit"
+                        class="auth-button">
+                        Send OTP
+                    </button>
+
+                </form>
+
+                <p
+                    id="forgotPasswordMessage"
+                    class="message">
+                </p>
+
+
+                <!-- Reset Password -->
+                <div
+                    id="resetPasswordSection"
+                    style="display: none;">
+
+                    <h2>Reset Password</h2>
+
+                    <form id="resetPasswordForm">
+
+                        <div class="form-group">
+                            <label for="resetOtp">
+                                OTP
+                            </label>
+
+                            <input
+                                type="text"
+                                id="resetOtp"
+                                placeholder="Enter 6-digit OTP"
+                                maxlength="6"
+                                required
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="newPassword">
+                                New Password
+                            </label>
+
+                            <input
+                                type="password"
+                                id="newPassword"
+                                placeholder="Enter new password"
+                                required
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="confirmPassword">
+                                Confirm Password
+                            </label>
+
+                            <input
+                                type="password"
+                                id="confirmPassword"
+                                placeholder="Confirm new password"
+                                required
+                            >
+                        </div>
+
+                        <button
+                            type="submit"
+                            class="auth-button">
+                            Reset Password
+                        </button>
+
+                    </form>
+
+                    <p
+                        id="resetPasswordMessage"
+                        class="message">
+                    </p>
+
+                </div>
+
+
+                <p class="switch-text">
+
+                    <button
+                        type="button"
+                        id="backToLogin">
+                        Back to Login
+                    </button>
+
+                </p>
+
+            </div>
+
+
+            <!-- Register -->
+            <div
+                id="registerSection"
+                style="display: none;">
+
+                <h2>Create Citizen Account</h2>
+
+                <form id="registerForm">
+
+                    <div class="form-group">
+                        <label for="registerName">
+                            Full Name
+                        </label>
+
+                        <input
+                            type="text"
+                            id="registerName"
+                            placeholder="Enter your full name"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="registerEmail">
+                            Gmail Address
+                        </label>
+
+                        <input
+                            type="email"
+                            id="registerEmail"
+                            placeholder="example@gmail.com"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="registerPassword">
+                            Password
+                        </label>
+
+                        <input
+                            type="password"
+                            id="registerPassword"
+                            placeholder="Create a password"
+                            required
+                        >
+                    </div>
+
+                    <button
+                        type="submit"
+                        class="auth-button">
+                        Create Account
+                    </button>
+
+                </form>
+
+                <p
+                    id="registerMessage"
+                    class="message">
+                </p>
+
+                <p class="switch-text">
+                    Already have an account?
+
+                    <button
+                        type="button"
+                        id="showLogin">
+                        Login
+                    </button>
+                </p>
+
+            </div>
+
+
+            <!-- Email Verification -->
+            <div
+                id="verificationSection"
+                style="display: none;">
+
+                <h2>Verify Your Email</h2>
+
+                <p>
+                    We have sent a verification code to your Gmail address.
+                </p>
+
+                <form id="verificationForm">
+
+                    <div class="form-group">
+                        <label for="otp">
+                            Verification Code
+                        </label>
+
+                        <input
+                            type="text"
+                            id="otp"
+                            placeholder="Enter OTP"
+                            maxlength="6"
+                            required
+                        >
+                    </div>
+
+                    <button
+                        type="submit"
+                        class="auth-button">
+                        Verify Email
+                    </button>
+
+                </form>
+
+                <p
+                    id="verificationMessage"
+                    class="message">
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <script src="app.js"></script>
+
+</body>
+</html>

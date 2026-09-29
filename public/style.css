@@ -1,0 +1,1054 @@
+:root {
+    --primary: #0284c7;
+    --primary-dark: #0369a1;
+    --bg: #f5f8fc;
+    --surface: #ffffff;
+    --text: #0f172a;
+    --muted: #64748b;
+    --border: #dbe4ee;
+    --success: #16a34a;
+    --danger: #dc2626;
+    --warning: #d97706;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+body {
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+}
+
+button,
+a,
+select,
+input[type="file"],
+.issue-card,
+.view-details-link {
+    cursor: pointer;
+}
+
+button:disabled,
+input:disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+
+/* =========================
+   AUTH
+========================= */
+
+.auth-container {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 430px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+}
+
+.auth-card h1 {
+    color: var(--primary);
+    margin-bottom: 8px;
+}
+
+.auth-card h2 {
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 18px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 7px;
+    font-weight: 600;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 12px 13px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: white;
+    color: var(--text);
+    font-size: 15px;
+}
+
+.form-group textarea {
+    min-height: 110px;
+    resize: vertical;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.12);
+}
+
+.auth-button {
+    width: 100%;
+    padding: 12px 18px;
+    border: none;
+    border-radius: 8px;
+    background: var(--primary);
+    color: white;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.auth-button:hover {
+    background: var(--primary-dark);
+}
+
+.switch-text {
+    margin-top: 16px;
+    text-align: center;
+    color: var(--muted);
+}
+
+.switch-text button {
+    border: none;
+    background: none;
+    color: var(--primary);
+    font-weight: 600;
+}
+
+#loginMessage,
+#registerMessage,
+#verificationMessage {
+    margin-top: 12px;
+    color: var(--danger);
+}
+
+
+/* =========================
+   HEADER
+========================= */
+
+.dashboard-header {
+    height: 76px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 30px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.header-title {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+}
+
+.header-title h1 {
+    color: var(--primary);
+    font-size: 23px;
+}
+
+.header-title span {
+    color: var(--muted);
+    font-size: 14px;
+}
+
+
+/* =========================
+   PROFILE
+========================= */
+
+.profile-container {
+    position: relative;
+}
+
+.profile-button {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 2px solid var(--primary);
+    background: #e8f5ff;
+    color: var(--primary);
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.profile-menu {
+    position: absolute;
+    top: 55px;
+    right: 0;
+    width: 230px;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.15);
+    padding: 10px;
+    display: none;
+    z-index: 200;
+}
+
+.profile-menu.show {
+    display: block;
+}
+
+.profile-info {
+    padding: 12px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 6px;
+}
+
+.profile-info strong {
+    display: block;
+}
+
+.profile-info small {
+    display: block;
+    color: var(--muted);
+    word-break: break-word;
+}
+
+.profile-role {
+    display: inline-block;
+    margin-top: 5px;
+    padding: 3px 8px;
+    border-radius: 20px;
+    background: #e0f2fe;
+    color: var(--primary-dark);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.profile-menu button {
+    width: 100%;
+    padding: 10px 12px;
+    border: none;
+    background: white;
+    text-align: left;
+    border-radius: 7px;
+    color: var(--text);
+}
+
+.profile-menu button:hover {
+    background: #f1f5f9;
+}
+
+.profile-menu .logout-button {
+    color: var(--danger);
+}
+
+
+/* =========================
+   MAIN
+========================= */
+
+.container {
+    width: min(1100px, calc(100% - 32px));
+    margin: 30px auto;
+}
+
+.dashboard-welcome {
+    margin-bottom: 25px;
+}
+
+.dashboard-welcome h1,
+.dashboard-welcome h2 {
+    margin-bottom: 5px;
+}
+
+.dashboard-welcome p {
+    color: var(--muted);
+}
+
+
+/* =========================
+   REPORT CARD
+========================= */
+
+.report-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 5px 18px rgba(15, 23, 42, 0.04);
+}
+
+.report-card h2 {
+    margin-bottom: 18px;
+}
+
+
+/* =========================
+   LOCATION
+========================= */
+
+.location-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.location-row input {
+    flex: 1;
+}
+
+.location-button {
+    border: none;
+    background: #e0f2fe;
+    color: #0369a1;
+    padding: 11px 15px;
+    border-radius: 8px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.location-button:hover {
+    background: #bae6fd;
+}
+
+#manualLocationButton {
+    cursor: pointer !important;
+}
+
+#locationMessage {
+    display: block;
+    margin-top: 7px;
+    color: var(--muted);
+}
+
+
+/* =========================
+   PHOTO
+========================= */
+
+.photo-preview {
+    margin-top: 12px;
+}
+
+.photo-preview img {
+    width: 100%;
+    max-height: 300px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+}
+
+
+/* =========================
+   ISSUES
+========================= */
+
+.issues-section {
+    margin-top: 30px;
+}
+
+.issue-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+    gap: 18px;
+}
+
+.issue-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 5px 16px rgba(15, 23, 42, 0.05);
+    transition: transform 0.18s, box-shadow 0.18s;
+}
+
+.issue-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.1);
+}
+
+.issue-card-image {
+    width: 100%;
+    height: 220px;
+    display: block;
+    object-fit: cover;
+}
+
+.issue-content {
+    padding: 18px;
+}
+
+.issue-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.issue-category {
+    color: var(--primary-dark);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.issue-title {
+    font-size: 19px;
+    margin-bottom: 7px;
+}
+
+.issue-description {
+    color: var(--muted);
+    margin-bottom: 10px;
+}
+
+.issue-location {
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 7px;
+}
+
+.issue-date {
+    color: var(--muted);
+    font-size: 13px;
+}
+
+
+/* =========================
+   STATUS
+========================= */
+
+.badge,
+.status-badge {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.status-OPEN {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.status-IN_PROGRESS {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.status-RESOLVED {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+
+/* =========================
+   ISSUE ACTIONS
+========================= */
+
+.issue-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 15px;
+    flex-wrap: wrap;
+}
+
+.issue-actions button {
+    cursor: pointer;
+}
+
+.resolve-button,
+.delete-button {
+    padding: 9px 12px;
+    border-radius: 7px;
+    background: white;
+    font-weight: 600;
+}
+
+.resolve-button {
+    border: 1px solid #86efac;
+    color: var(--success);
+}
+
+.resolve-button:hover {
+    background: #f0fdf4;
+}
+
+.delete-button {
+    border: 1px solid #fecaca;
+    color: var(--danger);
+}
+
+.delete-button:hover {
+    background: #fef2f2;
+}
+
+
+/* =========================
+   VIEW DETAILS
+========================= */
+
+.view-details-link {
+    display: block;
+    margin-top: 13px;
+    color: var(--primary-dark);
+    font-weight: 600;
+}
+
+.view-details-link:hover {
+    text-decoration: underline;
+}
+
+
+/* =========================
+   EMPTY STATE
+========================= */
+
+.empty-state {
+    background: white;
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+    padding: 35px;
+    text-align: center;
+    color: var(--muted);
+}
+
+
+/* =========================
+   REPORT NEW
+========================= */
+
+.report-new-button {
+    width: 100%;
+    margin: 10px 0 22px;
+}
+
+
+/* =========================
+   ISSUE DETAILS
+========================= */
+
+.issue-details-card {
+    width: min(900px, 100%);
+    margin: 25px auto;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 0 30px 30px;
+    box-shadow: 0 8px 25px rgba(15, 23, 42, 0.07);
+    overflow: hidden;
+}
+
+.issue-detail-photo {
+    margin: 0 -30px 25px;
+    background: #e2e8f0;
+}
+
+.issue-detail-photo img {
+    width: 100%;
+    max-height: 500px;
+    display: block;
+    object-fit: contain;
+    background: #f1f5f9;
+}
+
+.no-photo {
+    margin: 20px 0;
+    padding: 25px;
+    text-align: center;
+    background: #f8fafc;
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+    color: var(--muted);
+}
+
+.issue-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.issue-details-card h2 {
+    font-size: 28px;
+    margin-bottom: 8px;
+}
+
+.issue-detail-description {
+    color: var(--muted);
+    font-size: 16px;
+    margin-bottom: 25px;
+}
+
+.issue-detail-info {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.issue-detail-info p {
+    padding: 15px;
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+}
+
+.issue-detail-info strong {
+    display: block;
+    margin-bottom: 4px;
+}
+
+.issue-detail-actions {
+    margin-top: 22px;
+}
+
+.back-button {
+    border: 1px solid var(--border);
+    background: white;
+    color: var(--text);
+    padding: 9px 14px;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+.back-button:hover {
+    background: #f1f5f9;
+}
+
+
+/* =========================
+   COMMUNITY
+========================= */
+
+.community-header {
+    margin-bottom: 25px;
+}
+
+.community-header h1 {
+    margin-bottom: 5px;
+}
+
+.community-header p {
+    color: var(--muted);
+}
+
+.filters {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.filters select,
+.filters button {
+    padding: 10px 13px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: white;
+}
+
+.filters button:hover {
+    background: #f1f5f9;
+}
+
+.community-issues {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+    gap: 18px;
+}
+
+.community-issue-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: 0.18s;
+}
+
+.community-issue-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.1);
+}
+
+.community-issue-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.community-issue-content {
+    padding: 17px;
+}
+
+
+/* =========================
+   STATS
+========================= */
+
+.stats-grid,
+.stats-bar {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.stat-card,
+.stat-box {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+}
+
+.stat-card h3,
+.stat-box h2 {
+    color: var(--primary);
+    font-size: 30px;
+}
+
+.stat-card p,
+.stat-box p {
+    color: var(--muted);
+}
+
+
+/* =========================
+   ADMIN
+========================= */
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 18px;
+}
+
+.section-header .auth-button {
+    width: auto;
+}
+
+.admin-action-buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 15px;
+}
+
+.admin-action-buttons .auth-button {
+    width: auto;
+    padding: 9px 13px;
+    font-size: 14px;
+}
+
+.admin-action-buttons .auth-button:hover {
+    transform: none;
+}
+
+
+/* =========================
+   PAGE MESSAGES
+========================= */
+
+.page-message {
+    padding: 12px 15px;
+    margin-bottom: 18px;
+    border-radius: 9px;
+    font-weight: 600;
+}
+
+.page-message.success {
+    background: #dcfce7;
+    border: 1px solid #86efac;
+    color: #166534;
+}
+
+.page-message.error {
+    background: #fee2e2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+}
+
+
+/* =========================
+   COMMENTS
+========================= */
+
+.comments-section {
+    margin-top: 24px;
+}
+
+.comments-section h2 {
+    margin-bottom: 18px;
+}
+
+.comments-section #commentForm {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.comments-section #commentForm .form-group {
+    flex: 1;
+    margin: 0;
+}
+
+.comments-section #commentInput {
+    width: 100%;
+    height: 46px;
+    min-height: 46px;
+    padding: 11px 14px;
+    resize: none;
+    box-sizing: border-box;
+}
+
+.comments-section #commentInput::placeholder {
+    color: #888;
+}
+
+.comments-section #commentForm .auth-button {
+    width: auto;
+    height: 46px;
+    padding: 0 18px;
+    margin: 0;
+    white-space: nowrap;
+}
+
+.comments-list {
+    max-height: 420px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-right: 5px;
+}
+
+.comment-card {
+    flex-shrink: 0;
+    padding: 12px 15px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--bg);
+}
+
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 5px;
+}
+
+.comment-header strong {
+    color: var(--text);
+}
+
+.comment-header small {
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.comment-card p {
+    margin: 0;
+    color: var(--text);
+    line-height: 1.5;
+    word-break: break-word;
+}
+
+.comment-delete-button {
+    border: 1px solid #fecaca;
+    background: white;
+    color: var(--danger);
+    padding: 5px 9px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.comment-delete-button:hover {
+    background: #fef2f2;
+}
+
+.no-comments {
+    color: var(--muted);
+    text-align: center;
+    padding: 20px;
+}
+
+
+/* =========================
+   GENERAL BUTTONS
+========================= */
+
+.btn {
+    border: none;
+    border-radius: 8px;
+    padding: 10px 15px;
+    font-weight: 600;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--primary-dark);
+}
+
+
+/* =========================
+   MODAL
+========================= */
+
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.5);
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    z-index: 500;
+}
+
+.modal-content {
+    width: 100%;
+    max-width: 500px;
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 700px) {
+
+    .dashboard-header {
+        padding: 0 15px;
+        height: 68px;
+    }
+
+    .header-title {
+        gap: 5px;
+    }
+
+    .header-title h1 {
+        font-size: 19px;
+    }
+
+    .header-title span {
+        display: none;
+    }
+
+    .container {
+        width: min(100% - 20px, 1100px);
+        margin: 20px auto;
+    }
+
+    .report-card {
+        padding: 18px;
+    }
+
+    .location-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .location-row button {
+        width: 100%;
+        margin-left: 0 !important;
+    }
+
+    .issue-list {
+        grid-template-columns: 1fr;
+    }
+
+    .issue-detail-info {
+        grid-template-columns: 1fr;
+    }
+
+    .issue-details-card {
+        padding: 0 18px 22px;
+    }
+
+    .issue-detail-photo {
+        margin-left: -18px;
+        margin-right: -18px;
+    }
+
+    .issue-details-card h2 {
+        font-size: 23px;
+    }
+
+    .stats-grid,
+    .stats-bar {
+        grid-template-columns: 1fr;
+    }
+
+    .issue-actions {
+        flex-wrap: wrap;
+    }
+
+    .admin-action-buttons {
+        flex-direction: column;
+    }
+
+    .admin-action-buttons .auth-button {
+        width: 100%;
+    }
+
+    .section-header {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .section-header .auth-button {
+        width: 100%;
+    }
+
+    .comments-section #commentForm {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .comments-section #commentForm .auth-button {
+        width: 100%;
+    }
+
+    .comments-list {
+        max-height: 350px;
+    }
+
+    .profile-menu {
+        right: -5px;
+    }
+}

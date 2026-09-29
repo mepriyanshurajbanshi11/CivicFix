@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Admin Dashboard - CivicFix</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header class="dashboard-header">
+
+    <div class="header-title">
+        <h1>CivicFix</h1>
+        <span>Smart Civic Issue & Road Hazard Tracker</span>
+    </div>
+
+    <div class="profile-container">
+
+        <button
+            type="button"
+            id="profileButton"
+            class="profile-button">
+
+            <span id="profileInitial">A</span>
+
+        </button>
+
+        <div
+            id="profileMenu"
+            class="profile-menu">
+
+            <div class="profile-info">
+
+                <strong id="profileName">
+                    Admin
+                </strong>
+
+                <small id="profileEmail">
+                    admin@example.com
+                </small>
+
+                <span
+                    id="profileRole"
+                    class="profile-role">
+                    ADMIN
+                </span>
+
+            </div>
+
+            <button
+                type="button"
+                id="dashboardButton">
+                🏠 Dashboard
+            </button>
+
+            <button
+                type="button"
+                id="communityButton">
+                🌐 Community Issues
+            </button>
+
+            <button
+                type="button"
+                id="myReportsButton">
+                📋 My Reports
+            </button>
+
+            <button
+                type="button"
+                id="logoutButton"
+                class="logout-button">
+                🚪 Logout
+            </button>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+<main class="container">
+
+    <section class="dashboard-welcome">
+
+        <h2>
+            Admin Dashboard
+        </h2>
+
+        <p>
+            Manage civic issue reports and monitor their status.
+        </p>
+
+    </section>
+
+
+    <!-- STATISTICS -->
+
+    <section class="stats-grid">
+
+        <div class="stat-card">
+
+            <h3 id="openCount">
+                0
+            </h3>
+
+            <p>
+                Open Issues
+            </p>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <h3 id="progressCount">
+                0
+            </h3>
+
+            <p>
+                In Progress
+            </p>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <h3 id="resolvedCount">
+                0
+            </h3>
+
+            <p>
+                Resolved
+            </p>
+
+        </div>
+
+    </section>
+
+
+    <!-- REPORTS -->
+
+    <section class="issues-section">
+
+        <div class="section-header">
+
+            <h2>
+                All Reports
+            </h2>
+
+            <button
+                type="button"
+                id="refreshButton"
+                class="auth-button">
+                🔄 Refresh
+            </button>
+
+        </div>
+
+
+        <div
+            id="adminIssuesList"
+            class="issue-list">
+
+            <div class="empty-state">
+
+                <p>
+                    Loading reports...
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<script src="admin.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>CivicFix Dashboard</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header class="dashboard-header">
+
+    <div class="header-title">
+
+        <h1>CivicFix</h1>
+
+        <span>
+            Smart Civic Issue & Road Hazard Tracker
+        </span>
+
+    </div>
+
+
+    <div class="header-actions">
+
+        <button
+            type="button"
+            id="communityButton"
+            class="header-nav-button"
+        >
+            🌐 Community Issues
+        </button>
+
+
+        <div class="profile-container">
+
+            <button
+                type="button"
+                id="profileButton"
+                class="profile-button"
+            >
+
+                <span id="profileInitial">
+                    P
+                </span>
+
+            </button>
+
+
+            <div
+                id="profileMenu"
+                class="profile-menu"
+            >
+
+                <div class="profile-info">
+
+                    <strong id="profileName">
+                        Citizen
+                    </strong>
+
+                    <small id="profileEmail">
+                        email@example.com
+                    </small>
+
+                    <span
+                        id="profileRole"
+                        class="profile-role"
+                    >
+                        CITIZEN
+                    </span>
+
+                </div>
+
+
+                <button
+                    type="button"
+                    id="myReportsButton"
+                >
+                    📋 My Reports
+                </button>
+
+
+                <button
+                    type="button"
+                    id="editProfileButton"
+                >
+                    ✏️ Edit Profile
+                </button>
+
+
+                <button
+                    type="button"
+                    id="adminDashboardButton"
+                    style="display: none;"
+                >
+                    🛠️ Admin Dashboard
+                </button>
+
+
+                <button
+                    type="button"
+                    id="logoutButton"
+                    class="logout-button"
+                >
+                    🚪 Logout
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+<main class="container">
+
+
+    <section class="dashboard-welcome">
+
+        <h2>
+            Welcome,
+            <span id="welcomeName">
+                Citizen
+            </span>
+        </h2>
+
+        <p>
+            Report civic problems and help improve your community.
+        </p>
+
+    </section>
+
+
+    <section class="report-card">
+
+        <h2>
+            Report a Civic Issue
+        </h2>
+
+        <p class="details-help">
+            Submit a civic problem with its location and photo.
+        </p>
+
+
+        <form id="issueForm">
+
+
+            <div class="form-group">
+
+                <label for="category">
+                    Category
+                </label>
+
+                <select
+                    id="category"
+                    name="category"
+                    required
+                >
+
+                    <option value="">
+                        Select category
+                    </option>
+
+                    <option value="ROAD_DAMAGE">
+                        Road Damage
+                    </option>
+
+                    <option value="POTHOLE">
+                        Pothole
+                    </option>
+
+                    <option value="STREETLIGHT">
+                        Streetlight
+                    </option>
+
+                    <option value="GARBAGE">
+                        Garbage
+                    </option>
+
+                    <option value="DRAINAGE">
+                        Drainage
+                    </option>
+
+                    <option value="WATER_LEAK">
+                        Water Leak
+                    </option>
+
+                    <option value="OTHER">
+                        Other
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="title">
+                    Issue Title
+                </label>
+
+                <input
+                    type="text"
+                    id="title"
+                    name="title"
+                    maxlength="150"
+                    placeholder="Example: Large pothole near college gate"
+                    required
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="description">
+                    Description
+                </label>
+
+                <textarea
+                    id="description"
+                    name="description"
+                    rows="5"
+                    placeholder="Describe the problem..."
+                ></textarea>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="severity">
+                    Severity
+                </label>
+
+                <select
+                    id="severity"
+                    name="severity"
+                    required
+                >
+
+                    <option value="LOW">
+                        Low
+                    </option>
+
+                    <option
+                        value="MEDIUM"
+                        selected
+                    >
+                        Medium
+                    </option>
+
+                    <option value="HIGH">
+                        High
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="location-section">
+
+                <h3>
+                    📍 Problem Location
+                </h3>
+
+
+                <input
+                    type="text"
+                    id="address"
+                    name="address"
+                    placeholder="Enter an address or place"
+                    required
+                >
+
+
+                <button
+                    type="button"
+                    id="getLocationButton"
+                    class="location-button"
+                >
+                    📍 Use My Location
+                </button>
+
+
+                <button
+                    type="button"
+                    id="searchLocationButton"
+                    class="location-button secondary"
+                >
+                    🔎 Find Location
+                </button>
+
+
+                <p
+                    id="locationMessage"
+                    class="location-message"
+                >
+                    Your location will be detected automatically.
+                </p>
+
+
+                <input
+                    type="hidden"
+                    id="latitude"
+                    name="latitude"
+                >
+
+                <input
+                    type="hidden"
+                    id="longitude"
+                    name="longitude"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="issuePhoto">
+                    Add Photo
+                </label>
+
+                <input
+                    type="file"
+                    id="issuePhoto"
+                    name="image"
+                    accept="image/*"
+                >
+
+                <p class="details-help">
+                    Maximum image size: 10 MB.
+                </p>
+
+
+                <div
+                    id="photoPreview"
+                    class="photo-preview"
+                ></div>
+
+            </div>
+
+
+            <div
+                id="issueMessage"
+                class="page-message"
+            ></div>
+
+
+            <button
+                type="submit"
+                class="auth-button"
+            >
+                Report Issue
+            </button>
+
+        </form>
+
+    </section>
+
+</main>
+
+
+<!-- EDIT PROFILE -->
+
+<div
+    id="editProfileModal"
+    class="modal"
+>
+
+    <div class="modal-content">
+
+        <h2>
+            Edit Profile
+        </h2>
+
+
+        <div class="form-group">
+
+            <label for="profileNameInput">
+                Your Name
+            </label>
+
+            <input
+                type="text"
+                id="profileNameInput"
+                maxlength="100"
+                placeholder="Enter your name"
+            >
+
+        </div>
+
+
+        <div
+            id="profileMessage"
+            class="page-message"
+        ></div>
+
+
+        <div class="issue-actions">
+
+            <button
+                type="button"
+                id="saveProfileButton"
+                class="auth-button"
+            >
+                Save Changes
+            </button>
+
+
+            <button
+                type="button"
+                id="cancelProfileButton"
+                class="back-button"
+            >
+                Cancel
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script src="dashboard.js"></script>
+
+</body>
+
+</html>

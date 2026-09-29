@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>CivicFix - Public Issues</title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+</head>
+
+<body>
+
+<header class="dashboard-header">
+
+    <div class="header-title">
+
+        <h1>CivicFix</h1>
+
+        <span>
+            Public Civic Issues
+        </span>
+
+    </div>
+
+
+    <div class="public-nav">
+
+        <a
+            href="/dashboard.html"
+            class="nav-link"
+        >
+            Dashboard
+        </a>
+
+        <a
+            href="/my-reports.html"
+            class="nav-link"
+        >
+            My Reports
+        </a>
+
+        <button
+            type="button"
+            id="publicLogoutButton"
+            class="nav-logout"
+        >
+            Logout
+        </button>
+
+    </div>
+
+</header>
+
+
+<main class="container">
+
+    <section class="public-hero">
+
+        <h2>
+            Community Issues
+        </h2>
+
+        <p>
+            View civic problems reported by citizens
+            and help bring attention to important issues.
+        </p>
+
+    </section>
+
+
+    <section class="public-controls">
+
+        <div class="form-group">
+
+            <label for="categoryFilter">
+                Category
+            </label>
+
+            <select id="categoryFilter">
+
+                <option value="">
+                    All Categories
+                </option>
+
+                <option value="POTHOLE">
+                    Pothole
+                </option>
+
+                <option value="GARBAGE">
+                    Garbage
+                </option>
+
+                <option value="STREETLIGHT">
+                    Streetlight
+                </option>
+
+                <option value="DRAINAGE">
+                    Drainage
+                </option>
+
+                <option value="ROAD_DAMAGE">
+                    Road Damage
+                </option>
+
+                <option value="WATER">
+                    Water Problem
+                </option>
+
+                <option value="TRAFFIC">
+                    Traffic Problem
+                </option>
+
+                <option value="OTHER">
+                    Other
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label for="statusFilter">
+                Status
+            </label>
+
+            <select id="statusFilter">
+
+                <option value="">
+                    All Statuses
+                </option>
+
+                <option value="OPEN">
+                    Open
+                </option>
+
+                <option value="IN_PROGRESS">
+                    In Progress
+                </option>
+
+                <option value="RESOLVED">
+                    Resolved
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <button
+            type="button"
+            id="refreshIssuesButton"
+            class="refresh-button"
+        >
+            Refresh
+        </button>
+
+    </section>
+
+
+    <section>
+
+        <div
+            id="publicIssuesList"
+            class="public-issues-grid"
+        >
+            <div class="empty-state">
+                <p>
+                    Loading issues...
+                </p>
+            </div>
+        </div>
+
+    </section>
+
+</main>
+
+
+<script src="public.js"></script>
+
+</body>
+</html>

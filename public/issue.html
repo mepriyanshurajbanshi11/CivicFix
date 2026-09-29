@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Issue Details - CivicFix</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header class="dashboard-header">
+
+    <div class="header-title">
+        <h1>CivicFix</h1>
+        <span>Smart Civic Issue & Road Hazard Tracker</span>
+    </div>
+
+    <div class="profile-container">
+
+        <button
+            type="button"
+            id="profileButton"
+            class="profile-button">
+
+            <span id="profileInitial">P</span>
+
+        </button>
+
+
+        <div
+            id="profileMenu"
+            class="profile-menu">
+
+            <div class="profile-info">
+
+                <strong id="profileName">
+                    Citizen
+                </strong>
+
+                <small id="profileEmail">
+                    email@example.com
+                </small>
+
+                <span
+                    id="profileRole"
+                    class="profile-role">
+                    CITIZEN
+                </span>
+
+            </div>
+
+
+            <button
+                type="button"
+                id="dashboardButton">
+                🏠 Dashboard
+            </button>
+
+
+            <button
+                type="button"
+                id="communityButton">
+                🌐 Community Issues
+            </button>
+
+
+            <button
+                type="button"
+                id="myReportsButton">
+                📋 My Reports
+            </button>
+
+
+            <button
+                type="button"
+                id="adminDashboardButton"
+                style="display: none;">
+                🛠️ Admin Dashboard
+            </button>
+
+
+            <button
+                type="button"
+                id="logoutButton"
+                class="logout-button">
+                🚪 Logout
+            </button>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+<main class="container">
+
+
+    <button
+        type="button"
+        id="backButton"
+        class="back-button">
+
+        ← Back
+
+    </button>
+
+
+    <section
+        id="issueDetails"
+        class="issue-details-card">
+
+        <p>
+            Loading issue details...
+        </p>
+
+    </section>
+
+
+    <!-- COMMENTS -->
+
+    <section class="issue-details-card comments-section">
+
+        <h2>
+            💬 Comments
+        </h2>
+
+
+        <form id="commentForm">
+
+            <div class="form-group">
+
+                <textarea
+                    id="commentInput"
+                    placeholder="Write a comment..."
+                    maxlength="500"
+                    required>
+                </textarea>
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="auth-button">
+
+                Add Comment
+
+            </button>
+
+        </form>
+
+
+        <div
+            id="commentsList"
+            class="comments-list">
+
+            <p>
+                Loading comments...
+            </p>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<script src="issue.js"></script>
+
+</body>
+
+</html>
