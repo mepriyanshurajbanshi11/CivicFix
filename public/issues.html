@@ -8,6 +8,7 @@
     <title>Community Issues - CivicFix</title>
 
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 
     <style>
         .community-page {
@@ -434,8 +435,8 @@
                     Road Damage
                 </option>
 
-                <option value="WATER">
-                    Water Problem
+                <option value="WATER_LEAK">
+                    Water Leak
                 </option>
 
                 <option value="TRAFFIC">
@@ -492,6 +493,35 @@
     </section>
 
 
+    <div class="view-controls">
+        <div class="view-toggle" role="group" aria-label="View mode">
+            <button
+                type="button"
+                id="cardViewBtn"
+                class="view-toggle-btn active">
+                📋 Card Grid
+            </button>
+            <button
+                type="button"
+                id="mapViewBtn"
+                class="view-toggle-btn">
+                🗺️ Map View
+            </button>
+        </div>
+        <div id="issueCountBadge" class="issue-count-badge"></div>
+    </div>
+
+
+    <section id="mapViewSection" class="community-map-section" style="display: none;">
+        <div id="map" class="community-map"></div>
+        <div class="map-legend">
+            <span class="legend-item"><span class="legend-dot status-open"></span> Open</span>
+            <span class="legend-item"><span class="legend-dot status-progress"></span> In Progress</span>
+            <span class="legend-item"><span class="legend-dot status-resolved"></span> Resolved</span>
+        </div>
+    </section>
+
+
     <section
         id="issuesList"
         class="community-issues">
@@ -505,6 +535,7 @@
 </main>
 
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script src="public.js"></script>
 
 </body>

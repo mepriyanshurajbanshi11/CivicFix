@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SmartHome – Automation Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- MQTT.js via CDN (WebSocket broker) -->
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+</head>
+<body>
+
+<!-- ========== LOGIN SCREEN ========== -->
+<div id="loginScreen" class="screen">
+  <div class="login-card">
+    <div class="login-logo">🏠</div>
+    <h1>SmartHome</h1>
+    <p class="login-sub">Intelligent Home Automation System</p>
+
+    <div class="form-group">
+      <label>Username</label>
+      <input type="text" id="loginUser" placeholder="admin" />
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="loginPass" placeholder="••••••••" />
+    </div>
+    <div id="loginMsg" class="msg-box" style="display:none"></div>
+    <button class="btn-primary full" id="loginBtn">🔐 Sign In</button>
+    <p class="login-hint">Demo: <b>admin / admin123</b> &nbsp;|&nbsp; <b>user / user123</b></p>
+  </div>
+</div>
+
+<!-- ========== MAIN APP ========== -->
+<div id="appScreen" class="screen hidden">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-icon">🏠</span>
+      <span class="logo-text">SmartHome</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item active" data-page="dashboard">
+        <span class="nav-icon">📊</span><span>Dashboard</span>
+      </a>
+      <a href="#" class="nav-item" data-page="rooms">
+        <span class="nav-icon">🛋️</span><span>Rooms</span>
+      </a>
+      <a href="#" class="nav-item" data-page="devices">
+        <span class="nav-icon">💡</span><span>Devices</span>
+      </a>
+      <a href="#" class="nav-item" data-page="automation">
+        <span class="nav-icon">⚙️</span><span>Automation</span>
+      </a>
+      <a href="#" class="nav-item" data-page="energy">
+        <span class="nav-icon">⚡</span><span>Energy</span>
+      </a>
+      <a href="#" class="nav-item" data-page="security">
+        <span class="nav-icon">🔒</span><span>Security</span>
+      </a>
+      <a href="#" class="nav-item" data-page="logs">
+        <span class="nav-icon">📋</span><span>Logs</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <div class="mqtt-status" id="mqttStatus">
+        <span class="dot disconnected"></span>
+        <span id="mqttLabel">Connecting…</span>
+      </div>
+      <button class="nav-item logout-btn" id="logoutBtn">
+        <span class="nav-icon">🚪</span><span>Logout</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Top Bar -->
+  <div class="topbar">
+    <button class="hamburger" id="hamburger">☰</button>
+    <div class="topbar-title" id="pageTitle">Dashboard</div>
+    <div class="topbar-right">
+      <div class="weather-widget" id="weatherWidget">
+        <span id="weatherIcon">🌤️</span>
+        <span id="weatherTemp">28°C</span>
+      </div>
+      <div class="time-widget" id="clockWidget">--:--</div>
+      <div class="user-avatar" id="userAvatar">A</div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <main class="main-content">
+
+    <!-- ===== PAGE: DASHBOARD ===== -->
+    <div id="page-dashboard" class="page active">
+
+      <div class="welcome-bar">
+        <div>
+          <h2>Good <span id="greetingTime">Morning</span>, <span id="greetingName">Admin</span>! 👋</h2>
+          <p>Here's your home status at a glance.</p>
+        </div>
+        <div class="scene-buttons">
+          <button class="scene-btn" data-scene="away">🌙 Away</button>
+          <button class="scene-btn" data-scene="home">🏡 Home</button>
+          <button class="scene-btn" data-scene="sleep">😴 Sleep</button>
+          <button class="scene-btn" data-scene="party">🎉 Party</button>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat-card green">
+          <div class="stat-icon">💡</div>
+          <div>
+            <div class="stat-num" id="activeDevicesCount">0</div>
+            <div class="stat-label">Active Devices</div>
+          </div>
+        </div>
+        <div class="stat-card blue">
+          <div class="stat-icon">⚡</div>
+          <div>
+            <div class="stat-num" id="powerUsage">0W</div>
+            <div class="stat-label">Power Usage</div>
+          </div>
+        </div>
+        <div class="stat-card orange">
+          <div class="stat-icon">🌡️</div>
+          <div>
+            <div class="stat-num" id="avgTemp">24°C</div>
+            <div class="stat-label">Avg Temp</div>
+          </div>
+        </div>
+        <div class="stat-card purple">
+          <div class="stat-icon">💧</div>
+          <div>
+            <div class="stat-num" id="avgHumidity">58%</div>
+            <div class="stat-label">Avg Humidity</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Controls -->
+      <div class="section-title">⚡ Quick Controls</div>
+      <div class="quick-grid" id="quickGrid"></div>
+
+      <!-- Sensor Overview -->
+      <div class="section-title">📡 Live Sensor Data</div>
+      <div class="sensor-row" id="sensorRow"></div>
+
+    </div>
+
+    <!-- ===== PAGE: ROOMS ===== -->
+    <div id="page-rooms" class="page hidden">
+      <div class="section-title">🛋️ Rooms Overview</div>
+      <div class="rooms-grid" id="roomsGrid"></div>
+    </div>
+
+    <!-- ===== PAGE: DEVICES ===== -->
+    <div id="page-devices" class="page hidden">
+      <div class="section-header">
+        <div class="section-title" style="margin:0">💡 All Devices</div>
+        <div style="display:flex;gap:8px">
+          <select id="roomFilter" class="filter-select">
+            <option value="">All Rooms</option>
+          </select>
+          <select id="typeFilter" class="filter-select">
+            <option value="">All Types</option>
+            <option value="light">Lights</option>
+            <option value="fan">Fans</option>
+            <option value="ac">AC</option>
+            <option value="tv">TV</option>
+            <option value="plug">Smart Plugs</option>
+            <option value="lock">Locks</option>
+          </select>
+        </div>
+      </div>
+      <div class="devices-grid" id="devicesGrid"></div>
+    </div>
+
+    <!-- ===== PAGE: AUTOMATION ===== -->
+    <div id="page-automation" class="page hidden">
+      <div class="section-header">
+        <div class="section-title" style="margin:0">⚙️ Automation Rules</div>
+        <button class="btn-primary" id="addRuleBtn">+ Add Rule</button>
+      </div>
+      <div id="rulesContainer"></div>
+
+      <!-- Add Rule Modal -->
+      <div id="ruleModal" class="modal-overlay hidden">
+        <div class="modal-box">
+          <h3>➕ New Automation Rule</h3>
+          <div class="form-group">
+            <label>Rule Name</label>
+            <input type="text" id="ruleName" placeholder="e.g. Morning Lights On" />
+          </div>
+          <div class="form-group">
+            <label>Trigger Type</label>
+            <select id="triggerType">
+              <option value="time">⏰ Time-based</option>
+              <option value="sensor">📡 Sensor-based</option>
+            </select>
+          </div>
+          <div class="form-group" id="timeTriggerGroup">
+            <label>Time</label>
+            <input type="time" id="triggerTime" value="07:00" />
+          </div>
+          <div class="form-group" id="sensorTriggerGroup" style="display:none">
+            <label>Sensor Condition</label>
+            <select id="sensorCondition">
+              <option value="temp_high">Temperature &gt; 28°C</option>
+              <option value="temp_low">Temperature &lt; 20°C</option>
+              <option value="motion">Motion Detected</option>
+              <option value="dark">Lux &lt; 100 (Dark)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Action</label>
+            <select id="ruleAction">
+              <option value="all_lights_on">Turn All Lights ON</option>
+              <option value="all_lights_off">Turn All Lights OFF</option>
+              <option value="ac_on">Turn AC ON</option>
+              <option value="ac_off">Turn AC OFF</option>
+              <option value="fan_on">Turn Fans ON</option>
+              <option value="all_off">Turn Everything OFF</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Status</label>
+            <select id="ruleStatus">
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+          <div class="modal-actions">
+            <button class="btn-primary" id="saveRuleBtn">Save Rule</button>
+            <button class="btn-secondary" id="cancelRuleBtn">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PAGE: ENERGY ===== -->
+    <div id="page-energy" class="page hidden">
+      <div class="section-title">⚡ Energy Monitor</div>
+      <div class="stats-row">
+        <div class="stat-card green">
+          <div class="stat-icon">📅</div>
+          <div>
+            <div class="stat-num" id="dailyKwh">--</div>
+            <div class="stat-label">Today (kWh)</div>
+          </div>
+        </div>
+        <div class="stat-card blue">
+          <div class="stat-icon">📆</div>
+          <div>
+            <div class="stat-num" id="monthlyKwh">--</div>
+            <div class="stat-label">This Month (kWh)</div>
+          </div>
+        </div>
+        <div class="stat-card orange">
+          <div class="stat-icon">💰</div>
+          <div>
+            <div class="stat-num" id="monthlyCost">--</div>
+            <div class="stat-label">Est. Bill (₹)</div>
+          </div>
+        </div>
+        <div class="stat-card purple">
+          <div class="stat-icon">🌿</div>
+          <div>
+            <div class="stat-num" id="co2Saved">--</div>
+            <div class="stat-label">CO₂ Saved (kg)</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">📊 Hourly Usage (Today)</div>
+      <div class="chart-container">
+        <canvas id="energyChart"></canvas>
+      </div>
+
+      <div class="section-title">🔌 Per-Device Consumption</div>
+      <div id="deviceConsumption" class="energy-table"></div>
+    </div>
+
+    <!-- ===== PAGE: SECURITY ===== -->
+    <div id="page-security" class="page hidden">
+      <div class="section-title">🔒 Security Center</div>
+
+      <div class="security-grid">
+        <div class="security-card">
+          <div class="security-icon">🚨</div>
+          <h3>Alarm System</h3>
+          <div class="alarm-status" id="alarmStatus">DISARMED</div>
+          <div class="toggle-row">
+            <span>Arm Alarm</span>
+            <label class="toggle">
+              <input type="checkbox" id="alarmToggle" />
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+        <div class="security-card">
+          <div class="security-icon">📹</div>
+          <h3>Camera Feed</h3>
+          <div class="camera-placeholder">
+            <span>📸</span>
+            <p>Camera Simulation Active</p>
+            <small>Motion: <span id="cameraMotion">None detected</span></small>
+          </div>
+        </div>
+        <div class="security-card">
+          <div class="security-icon">🚪</div>
+          <h3>Door Locks</h3>
+          <div id="doorLocksList"></div>
+        </div>
+        <div class="security-card">
+          <div class="security-icon">🔔</div>
+          <h3>Recent Alerts</h3>
+          <div id="securityAlerts" class="alerts-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PAGE: LOGS ===== -->
+    <div id="page-logs" class="page hidden">
+      <div class="section-header">
+        <div class="section-title" style="margin:0">📋 Activity Logs</div>
+        <button class="btn-secondary" id="clearLogsBtn">🗑️ Clear</button>
+      </div>
+      <div id="logsContainer" class="logs-container"></div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Toast notifications -->
+<div id="toastContainer" class="toast-container"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

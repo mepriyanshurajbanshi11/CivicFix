@@ -1220,6 +1220,214 @@ app.post(
 
 
 // =========================
+// REVERSE GEOCODING PROXY
+// =========================
+
+app.get(
+    '/api/reverse-geocode',
+    async (req, res) => {
+
+        const { lat, lon } = req.query;
+
+        if (!lat || !lon) {
+            return res.status(400).json({
+                error: 'Latitude and longitude are required'
+            });
+        }
+
+        // 1. Try Photon first (exact building, apartment, locality precision)
+        try {
+            const photonRes = await fetch(
+                `https://photon.komoot.io/reverse?lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}&limit=1`,
+                {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                }
+            );
+
+            if (photonRes.ok) {
+                const data = await photonRes.json();
+                if (data.features && data.features.length > 0) {
+                    const props = data.features[0].properties;
+                    const parts = [
+                        props.name,
+                        props.street,
+                        props.locality,
+                        props.suburb,
+                        props.neighbourhood,
+                        props.city,
+                        props.town,
+                        props.village,
+                        props.district,
+                        props.state,
+                        props.country,
+                        props.postcode
+                    ].filter(
+                        (value, index, array) =>
+                            value && array.indexOf(value) === index
+                    );
+
+                    if (parts.length > 0) {
+                        return res.json({
+                            address: parts.join(', ')
+                        });
+                    }
+                }
+            }
+        } catch (photonErr) {
+            console.warn('Photon proxy failed:', photonErr.message);
+        }
+
+        // 2. Try Nominatim (OpenStreetMap standard)
+        try {
+            const nomRes = await fetch(
+                `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}`,
+                {
+                    headers: {
+                        'User-Agent': 'CivicFixApp/1.0 (contact@civicfix.local)'
+                    }
+                }
+            );
+
+            if (nomRes.ok) {
+                const data = await nomRes.json();
+                if (data.display_name) {
+                    return res.json({
+                        address: data.display_name
+                    });
+                }
+            }
+        } catch (nomErr) {
+            console.warn('Nominatim proxy failed:', nomErr.message);
+        }
+
+        // 3. Try BigDataCloud
+        try {
+            const bdcRes = await fetch(
+                `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${encodeURIComponent(lat)}&longitude=${encodeURIComponent(lon)}&localityLanguage=en`
+            );
+
+            if (bdcRes.ok) {
+                const data = await bdcRes.json();
+                const parts = [
+                    data.locality,
+                    data.city,
+                    data.principalSubdivision,
+                    data.countryName
+                ].filter(Boolean);
+
+                if (parts.length > 0) {
+                    return res.json({
+                        address: parts.join(', ')
+                    });
+                }
+            }
+        } catch (bdcErr) {
+            console.warn('BigDataCloud proxy failed:', bdcErr.message);
+        }
+
+        return res.status(404).json({
+            error: 'Address not found'
+        });
+    }
+);
+
+
+// =========================
+// GEOCODING SEARCH PROXY
+// =========================
+
+app.get(
+    '/api/geocode',
+    async (req, res) => {
+
+        const { q } = req.query;
+
+        if (!q) {
+            return res.status(400).json({
+                error: 'Query is required'
+            });
+        }
+
+        // 1. Try Photon search
+        try {
+            const photonRes = await fetch(
+                `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=1`,
+                {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                }
+            );
+
+            if (photonRes.ok) {
+                const data = await photonRes.json();
+                if (data.features && data.features.length > 0) {
+                    const feature = data.features[0];
+                    const coords = feature.geometry.coordinates;
+                    const props = feature.properties;
+                    const parts = [
+                        props.name,
+                        props.street,
+                        props.locality,
+                        props.suburb,
+                        props.neighbourhood,
+                        props.city,
+                        props.town,
+                        props.village,
+                        props.district,
+                        props.state,
+                        props.country,
+                        props.postcode
+                    ].filter(
+                        (v, i, a) => v && a.indexOf(v) === i
+                    );
+
+                    return res.json({
+                        longitude: coords[0],
+                        latitude: coords[1],
+                        address: parts.length > 0 ? parts.join(', ') : q
+                    });
+                }
+            }
+        } catch (photonErr) {
+            console.warn('Photon geocode search failed:', photonErr.message);
+        }
+
+        // 2. Try Nominatim search
+        try {
+            const nomRes = await fetch(
+                `https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(q)}&limit=1`,
+                {
+                    headers: {
+                        'User-Agent': 'CivicFixApp/1.0 (contact@civicfix.local)'
+                    }
+                }
+            );
+
+            if (nomRes.ok) {
+                const data = await nomRes.json();
+                if (Array.isArray(data) && data.length > 0) {
+                    return res.json({
+                        longitude: parseFloat(data[0].lon),
+                        latitude: parseFloat(data[0].lat),
+                        address: data[0].display_name
+                    });
+                }
+            }
+        } catch (nomErr) {
+            console.warn('Nominatim geocode search failed:', nomErr.message);
+        }
+
+        return res.status(404).json({
+            error: 'Location not found'
+        });
+    }
+);
+
+
+// =========================
 // CREATE ISSUE
 // =========================
 

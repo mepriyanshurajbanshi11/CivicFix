@@ -40,6 +40,11 @@ function setupAuthButtons() {
             'backToLogin'
         );
 
+    const adminLoginButton =
+        document.getElementById(
+            'adminLoginButton'
+        );
+
 
     if (showRegister) {
 
@@ -125,6 +130,21 @@ function setupAuthButtons() {
         backToLogin.addEventListener(
             'click',
             showLoginSection
+        );
+
+    }
+
+
+    if (adminLoginButton) {
+
+        adminLoginButton.addEventListener(
+            'click',
+            () => {
+
+                window.location.href =
+                    '/admin-login.html';
+
+            }
         );
 
     }
@@ -566,6 +586,19 @@ async function loginUser(event) {
             message.textContent =
                 data.error ||
                 'Login failed.';
+
+            return;
+
+        }
+
+
+        if (
+            data.user &&
+            data.user.role === 'ADMIN'
+        ) {
+
+            message.textContent =
+                'Please use Admin Login for administrator access.';
 
             return;
 

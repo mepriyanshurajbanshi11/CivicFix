@@ -24,6 +24,16 @@ const logoutButton = document.getElementById('logoutButton');
 
 const pageMessage = document.getElementById('pageMessage');
 
+const cardViewBtn = document.getElementById('cardViewBtn');
+const mapViewBtn = document.getElementById('mapViewBtn');
+const mapViewSection = document.getElementById('mapViewSection');
+const issueCountBadge = document.getElementById('issueCountBadge');
+
+let currentIssuesData = [];
+let currentViewMode = 'grid';
+let leafletMap = null;
+let markersLayer = null;
+
 
 // Profile
 
@@ -202,7 +212,18 @@ async function loadIssues() {
             throw new Error(data.error || 'Failed to load issues');
         }
 
-        renderIssues(data);
+        currentIssuesData = Array.isArray(data) ? data : [];
+
+        if (issueCountBadge) {
+            const count = currentIssuesData.length;
+            issueCountBadge.textContent = `${count} ${count === 1 ? 'issue' : 'issues'} found`;
+        }
+
+        renderIssues(currentIssuesData);
+
+        if (leafletMap) {
+            updateMapMarkers(currentIssuesData);
+        }
 
     } catch (error) {
 
@@ -480,6 +501,173 @@ refreshButton.addEventListener('click', async () => {
     refreshButton.disabled = false;
     refreshButton.textContent = '🔄 Refresh';
 });
+
+
+// =========================
+// MAP VIEW & LEAFLET
+// =========================
+
+function initMap() {
+    if (leafletMap || typeof L === 'undefined') {
+        return;
+    }
+
+    const mapElement = document.getElementById('map');
+    if (!mapElement) {
+        return;
+    }
+
+    leafletMap = L.map('map', {
+        scrollWheelZoom: true,
+        zoomControl: true
+    }).setView([20.5937, 78.9629], 5);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors'
+    }).addTo(leafletMap);
+
+    markersLayer = L.layerGroup().addTo(leafletMap);
+}
+
+function createMarkerIcon(status) {
+    let pinColor = '#dc2626'; // Red for Open
+    if (status === 'IN_PROGRESS') {
+        pinColor = '#d97706'; // Orange for In Progress
+    } else if (status === 'RESOLVED') {
+        pinColor = '#16a34a'; // Green for Resolved
+    }
+
+    return L.divIcon({
+        className: 'custom-leaflet-marker',
+        html: `
+            <div class="pin-svg-container" style="filter: drop-shadow(0 3px 6px rgba(0,0,0,0.3));">
+                <svg width="32" height="42" viewBox="0 0 32 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M16 0C7.16344 0 0 7.16344 0 16C0 26.5 16 42 16 42C16 42 32 26.5 32 16C32 7.16344 24.8366 0 16 0Z" fill="${pinColor}"/>
+                    <circle cx="16" cy="16" r="6.5" fill="#ffffff"/>
+                </svg>
+            </div>
+        `,
+        iconSize: [32, 42],
+        iconAnchor: [16, 42],
+        popupAnchor: [0, -40]
+    });
+}
+
+function updateMapMarkers(issues) {
+    if (!leafletMap || !markersLayer) {
+        initMap();
+    }
+
+    if (!markersLayer) {
+        return;
+    }
+
+    markersLayer.clearLayers();
+
+    const validIssues = (issues || []).filter(issue => {
+        const lat = parseFloat(issue.latitude);
+        const lng = parseFloat(issue.longitude);
+        return !isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0;
+    });
+
+    const markerBounds = [];
+
+    validIssues.forEach(issue => {
+        const lat = parseFloat(issue.latitude);
+        const lng = parseFloat(issue.longitude);
+        const latLng = [lat, lng];
+        markerBounds.push(latLng);
+
+        const marker = L.marker(latLng, {
+            icon: createMarkerIcon(issue.status),
+            title: issue.title || 'Civic Issue'
+        });
+
+        const imageUrl = getImageUrl(issue.image_path);
+        const statusClass = issue.status === 'IN_PROGRESS'
+            ? 'in-progress'
+            : issue.status === 'RESOLVED'
+                ? 'resolved'
+                : 'open';
+
+        const popupContent = `
+            <div class="map-popup-card">
+                ${imageUrl ? `
+                    <div class="map-popup-photo">
+                        <img
+                            src="${escapeHtml(imageUrl)}"
+                            alt="${escapeHtml(issue.title || 'Issue photo')}"
+                            onerror="this.parentElement.style.display='none'"
+                        >
+                    </div>
+                ` : ''}
+                <div class="map-popup-content-inner">
+                    <div class="map-popup-header">
+                        <span class="map-popup-category">${escapeHtml(formatCategory(issue.category))}</span>
+                        <span class="map-popup-badge ${statusClass}">${escapeHtml(formatStatus(issue.status))}</span>
+                    </div>
+                    <h4 class="map-popup-title">${escapeHtml(issue.title || 'Untitled Issue')}</h4>
+                    <p class="map-popup-address">📍 ${escapeHtml(issue.address || 'Location on map')}</p>
+                    <div class="map-popup-meta">
+                        <span>👍 ${Number(issue.upvote_count || 0)} Likes</span>
+                        <span>👤 ${escapeHtml(issue.reporter_name || 'Citizen')}</span>
+                    </div>
+                    <a href="/issue.html?id=${encodeURIComponent(issue.id)}" class="map-popup-btn">
+                        View Details &rarr;
+                    </a>
+                </div>
+            </div>
+        `;
+
+        marker.bindPopup(popupContent, {
+            maxWidth: 290,
+            className: 'custom-map-popup'
+        });
+
+        markersLayer.addLayer(marker);
+    });
+
+    if (markerBounds.length > 0 && leafletMap) {
+        leafletMap.fitBounds(L.latLngBounds(markerBounds), {
+            padding: [50, 50],
+            maxZoom: 15
+        });
+    }
+}
+
+function switchViewMode(mode) {
+    currentViewMode = mode;
+
+    if (mode === 'map') {
+        if (cardViewBtn) cardViewBtn.classList.remove('active');
+        if (mapViewBtn) mapViewBtn.classList.add('active');
+        if (issuesList) issuesList.style.display = 'none';
+        if (mapViewSection) mapViewSection.style.display = 'block';
+
+        initMap();
+
+        setTimeout(() => {
+            if (leafletMap) {
+                leafletMap.invalidateSize();
+                updateMapMarkers(currentIssuesData);
+            }
+        }, 80);
+    } else {
+        if (mapViewBtn) mapViewBtn.classList.remove('active');
+        if (cardViewBtn) cardViewBtn.classList.add('active');
+        if (mapViewSection) mapViewSection.style.display = 'none';
+        if (issuesList) issuesList.style.display = 'grid';
+    }
+}
+
+if (cardViewBtn) {
+    cardViewBtn.addEventListener('click', () => switchViewMode('grid'));
+}
+
+if (mapViewBtn) {
+    mapViewBtn.addEventListener('click', () => switchViewMode('map'));
+}
 
 
 loadIssues();

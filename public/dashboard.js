@@ -486,74 +486,83 @@ async function getCurrentLocation() {
 // REVERSE GEOCODING
 // =========================
 
-async function reverseGeocode(
-    latitude,
-    longitude
-) {
+async function reverseGeocode(latitude, longitude) {
 
-    const url =
-        `https://photon.komoot.io/reverse?lat=${latitude}&lon=${longitude}&limit=1`;
-
-
-    const response =
-        await fetch(url);
-
-
-    if (!response.ok) {
-
-        throw new Error(
-            'Reverse geocoding failed'
+    // 1. Try internal backend proxy (server-side, avoids browser ad-blockers and CORS)
+    try {
+        const localResponse = await fetch(
+            `/api/reverse-geocode?lat=${encodeURIComponent(latitude)}&lon=${encodeURIComponent(longitude)}`
         );
 
+        if (localResponse.ok) {
+            const localData = await localResponse.json();
+            if (localData && localData.address && localData.address.trim()) {
+                return { address: localData.address.trim() };
+            }
+        }
+    } catch (localErr) {
+        console.warn('Backend geocode proxy unavailable, trying direct providers...', localErr);
     }
 
+    // 2. Direct client-side Photon (OpenStreetMap)
+    try {
+        const url = `https://photon.komoot.io/reverse?lat=${latitude}&lon=${longitude}&limit=1`;
+        const response = await fetch(url);
 
-    const data =
-        await response.json();
+        if (response.ok) {
+            const data = await response.json();
+            if (data.features && data.features.length) {
+                const props = data.features[0].properties;
+                const parts = [
+                    props.name,
+                    props.street,
+                    props.locality,
+                    props.suburb,
+                    props.neighbourhood,
+                    props.city,
+                    props.town,
+                    props.village,
+                    props.district,
+                    props.state,
+                    props.country,
+                    props.postcode
+                ].filter(
+                    (value, index, array) =>
+                        value && array.indexOf(value) === index
+                );
 
-
-    if (
-        !data.features ||
-        !data.features.length
-    ) {
-
-        throw new Error(
-            'Address not found'
-        );
-
+                if (parts.length > 0) {
+                    return { address: parts.join(', ') };
+                }
+            }
+        }
+    } catch (photonErr) {
+        console.warn('Direct Photon reverse geocode failed:', photonErr);
     }
 
+    // 3. Direct client-side BigDataCloud (high reliability, CORS-enabled fallback)
+    try {
+        const bdcUrl = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`;
+        const bdcRes = await fetch(bdcUrl);
 
-    const properties =
-        data.features[0].properties;
+        if (bdcRes.ok) {
+            const bdcData = await bdcRes.json();
+            const parts = [
+                bdcData.locality,
+                bdcData.city,
+                bdcData.principalSubdivision,
+                bdcData.countryName
+            ].filter(Boolean);
 
+            if (parts.length > 0) {
+                return { address: parts.join(', ') };
+            }
+        }
+    } catch (bdcErr) {
+        console.warn('Direct BigDataCloud reverse geocode failed:', bdcErr);
+    }
 
-    const parts = [
-
-        properties.name,
-        properties.street,
-        properties.locality,
-        properties.suburb,
-        properties.neighbourhood,
-        properties.city,
-        properties.town,
-        properties.village,
-        properties.district,
-        properties.state,
-        properties.country,
-        properties.postcode
-
-    ].filter(
-        (value, index, array) =>
-            value &&
-            array.indexOf(value) === index
-    );
-
-
-    return {
-        address: parts.join(', ')
-    };
-
+    throw new Error('All reverse geocoding providers failed');
 }
 
 
@@ -561,231 +570,139 @@ async function reverseGeocode(
 // MANUAL LOCATION SEARCH
 // =========================
 
-const manualLocationButton =
-    document.createElement('button');
+const searchLocationButton =
+    document.getElementById('searchLocationButton') ||
+    (() => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.id = 'manualLocationButton';
+        btn.textContent = '🔎 Find Location';
+        btn.style.marginTop = '10px';
+        btn.style.width = '100%';
+        btn.style.padding = '12px';
+        btn.style.border = 'none';
+        btn.style.borderRadius = '10px';
+        btn.style.background = '#e8f4ff';
+        btn.style.color = '#087fbd';
+        btn.style.cursor = 'pointer';
+        btn.style.fontWeight = '600';
+        if (getLocationButton && getLocationButton.parentNode) {
+            getLocationButton.parentNode.appendChild(btn);
+        }
+        return btn;
+    })();
 
+if (searchLocationButton) {
 
-manualLocationButton.type =
-    'button';
+    searchLocationButton.addEventListener(
+        'click',
+        async () => {
 
+            const typedAddress =
+                addressInput ? addressInput.value.trim() : '';
 
-manualLocationButton.id =
-    'manualLocationButton';
+            if (!typedAddress) {
+                alert('Please enter a location first.');
+                if (addressInput) {
+                    addressInput.focus();
+                }
+                return;
+            }
 
+            searchLocationButton.disabled = true;
+            searchLocationButton.textContent = '🔎 Finding...';
 
-manualLocationButton.textContent =
-    '🔎 Find Location';
+            if (locationMessage) {
+                locationMessage.textContent = 'Searching for this location...';
+            }
 
+            try {
+                const result = await searchAddress(typedAddress);
 
-manualLocationButton.style.marginTop =
-    '10px';
+                if (latitudeInput) {
+                    latitudeInput.value = result.latitude;
+                }
 
+                if (longitudeInput) {
+                    longitudeInput.value = result.longitude;
+                }
 
-manualLocationButton.style.width =
-    '100%';
+                if (addressInput) {
+                    addressInput.value = result.address;
+                }
 
+                if (locationMessage) {
+                    locationMessage.innerHTML =
+                        '✓ Location found.<br><small>You can now submit the report.</small>';
+                }
 
-manualLocationButton.style.padding =
-    '12px';
+            } catch (error) {
+                console.error(error);
 
+                if (latitudeInput) {
+                    latitudeInput.value = '';
+                }
 
-manualLocationButton.style.border =
-    'none';
+                if (longitudeInput) {
+                    longitudeInput.value = '';
+                }
 
+                if (locationMessage) {
+                    locationMessage.textContent =
+                        'Location not found. Try a more specific address.';
+                }
 
-manualLocationButton.style.borderRadius =
-    '10px';
+            } finally {
+                searchLocationButton.disabled = false;
+                searchLocationButton.textContent = '🔎 Find Location';
+            }
 
-
-manualLocationButton.style.background =
-    '#e8f4ff';
-
-
-manualLocationButton.style.color =
-    '#087fbd';
-
-
-manualLocationButton.style.cursor =
-    'pointer';
-
-
-manualLocationButton.style.fontWeight =
-    '600';
-
-
-if (getLocationButton) {
-
-    getLocationButton.parentNode.appendChild(
-        manualLocationButton
+        }
     );
 
 }
-
-
-manualLocationButton.addEventListener(
-    'click',
-    async () => {
-
-        const typedAddress =
-            addressInput
-                ? addressInput.value.trim()
-                : '';
-
-
-        if (!typedAddress) {
-
-            alert(
-                'Please enter a location first.'
-            );
-
-            if (addressInput) {
-                addressInput.focus();
-            }
-
-            return;
-        }
-
-
-        manualLocationButton.disabled =
-            true;
-
-
-        manualLocationButton.textContent =
-            '🔎 Finding...';
-
-
-        if (locationMessage) {
-            locationMessage.textContent =
-                'Searching for this location...';
-        }
-
-
-        try {
-
-            const result =
-                await searchAddress(
-                    typedAddress
-                );
-
-
-            if (latitudeInput) {
-                latitudeInput.value =
-                    result.latitude;
-            }
-
-
-            if (longitudeInput) {
-                longitudeInput.value =
-                    result.longitude;
-            }
-
-
-            if (addressInput) {
-                addressInput.value =
-                    result.address;
-            }
-
-
-            if (locationMessage) {
-
-                locationMessage.innerHTML =
-                    '✓ Location found.<br>' +
-                    '<small>You can now submit the report.</small>';
-
-            }
-
-
-        } catch (error) {
-
-            console.error(error);
-
-
-            if (latitudeInput) {
-                latitudeInput.value = '';
-            }
-
-
-            if (longitudeInput) {
-                longitudeInput.value = '';
-            }
-
-
-            if (locationMessage) {
-
-                locationMessage.textContent =
-                    'Location not found. Try a more specific address.';
-
-            }
-
-        }
-
-
-        manualLocationButton.disabled =
-            false;
-
-
-        manualLocationButton.textContent =
-            '🔎 Find Location';
-
-    }
-);
 
 
 // =========================
 // SEARCH ADDRESS
 // =========================
 
-async function searchAddress(
-    typedAddress
-) {
+async function searchAddress(typedAddress) {
 
-    const url =
-        `https://photon.komoot.io/api/?q=${encodeURIComponent(typedAddress)}&limit=1`;
+    // 1. Try local backend geocode proxy first
+    try {
+        const localRes = await fetch(
+            `/api/geocode?q=${encodeURIComponent(typedAddress)}`
+        );
+        if (localRes.ok) {
+            const localData = await localRes.json();
+            if (localData && localData.latitude && localData.longitude) {
+                return localData;
+            }
+        }
+    } catch (localErr) {
+        console.warn('Backend geocode search failed, trying direct...', localErr);
+    }
 
-
-    const response =
-        await fetch(url);
-
+    // 2. Direct Photon search fallback
+    const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(typedAddress)}&limit=1`;
+    const response = await fetch(url);
 
     if (!response.ok) {
-
-        throw new Error(
-            'Location search failed'
-        );
-
+        throw new Error('Location search failed');
     }
 
+    const data = await response.json();
 
-    const data =
-        await response.json();
-
-
-    if (
-        !data.features ||
-        !data.features.length
-    ) {
-
-        throw new Error(
-            'Location not found'
-        );
-
+    if (!data.features || !data.features.length) {
+        throw new Error('Location not found');
     }
 
-
-    const feature =
-        data.features[0];
-
-
-    const coordinates =
-        feature.geometry.coordinates;
-
-
-    const properties =
-        feature.properties;
-
+    const feature = data.features[0];
+    const coordinates = feature.geometry.coordinates;
+    const properties = feature.properties;
 
     const parts = [
-
         properties.name,
         properties.street,
         properties.locality,
@@ -798,27 +715,15 @@ async function searchAddress(
         properties.state,
         properties.country,
         properties.postcode
-
     ].filter(
         (value, index, array) =>
-            value &&
-            array.indexOf(value) === index
+            value && array.indexOf(value) === index
     );
 
-
     return {
-
-        longitude:
-            coordinates[0],
-
-        latitude:
-            coordinates[1],
-
-        address:
-            parts.length
-                ? parts.join(', ')
-                : typedAddress
-
+        longitude: coordinates[0],
+        latitude: coordinates[1],
+        address: parts.length ? parts.join(', ') : typedAddress
     };
 
 }

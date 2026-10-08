@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Admin Login - CivicFix</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <main class="auth-container">
+
+        <section class="auth-card">
+
+            <div class="auth-header">
+
+                <h1>CivicFix</h1>
+
+                <p>
+                    Smart Civic Issue & Road Hazard Tracker
+                </p>
+
+            </div>
+
+
+            <h2>Admin Login</h2>
+
+            <p class="auth-subtitle">
+                Authorized administrators only
+            </p>
+
+
+            <form id="adminLoginForm">
+
+                <div class="form-group">
+
+                    <label for="adminEmail">
+                        Email
+                    </label>
+
+                    <input
+                        type="email"
+                        id="adminEmail"
+                        placeholder="Enter admin email"
+                        required>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="adminPassword">
+                        Password
+                    </label>
+
+                    <input
+                        type="password"
+                        id="adminPassword"
+                        placeholder="Enter password"
+                        required>
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="auth-button">
+                    Login as Admin
+                </button>
+
+
+                <p
+                    id="adminLoginMessage"
+                    class="form-message">
+                </p>
+
+            </form>
+
+
+            <div class="auth-footer">
+
+                <button
+                    type="button"
+                    id="backToLogin"
+                    class="text-button">
+                    ← Back to User Login
+                </button>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <script>
+
+        const adminLoginForm =
+            document.getElementById('adminLoginForm');
+
+        const adminEmail =
+            document.getElementById('adminEmail');
+
+        const adminPassword =
+            document.getElementById('adminPassword');
+
+        const adminLoginMessage =
+            document.getElementById('adminLoginMessage');
+
+        const backToLogin =
+            document.getElementById('backToLogin');
+
+
+        adminLoginForm.addEventListener(
+            'submit',
+            async (event) => {
+
+                event.preventDefault();
+
+                adminLoginMessage.textContent = '';
+                adminLoginMessage.className =
+                    'form-message';
+
+                try {
+
+                    const response =
+                        await fetch('/api/login', {
+
+                            method: 'POST',
+
+                            headers: {
+                                'Content-Type':
+                                    'application/json'
+                            },
+
+                            body: JSON.stringify({
+                                email:
+                                    adminEmail.value.trim(),
+                                password:
+                                    adminPassword.value
+                            })
+
+                        });
+
+
+                    const data =
+                        await response.json();
+
+
+                    if (!response.ok) {
+
+                        throw new Error(
+                            data.error ||
+                            'Login failed.'
+                        );
+
+                    }
+
+
+                    if (
+                        !data.user ||
+                        data.user.role !== 'ADMIN'
+                    ) {
+
+                        throw new Error(
+                            'This account is not authorized for admin access.'
+                        );
+
+                    }
+
+
+                    localStorage.setItem(
+                        'civic_token',
+                        data.token
+                    );
+
+                    localStorage.setItem(
+                        'civic_user',
+                        JSON.stringify(data.user)
+                    );
+
+
+                    adminLoginMessage.textContent =
+                        'Login successful.';
+
+                    adminLoginMessage.className =
+                        'form-message success';
+
+
+                    setTimeout(() => {
+
+                        window.location.href =
+                            '/admin.html';
+
+                    }, 500);
+
+                } catch (error) {
+
+                    adminLoginMessage.textContent =
+                        error.message ||
+                        'Unable to login.';
+
+                    adminLoginMessage.className =
+                        'form-message error';
+
+                }
+
+            }
+        );
+
+
+        backToLogin.addEventListener(
+            'click',
+            () => {
+
+                window.location.href = '/';
+
+            }
+        );
+
+    </script>
+
+</body>
+
+</html>
