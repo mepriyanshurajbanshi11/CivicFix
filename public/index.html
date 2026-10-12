@@ -13,6 +13,35 @@
 
     <div class="auth-container">
 
+        <div class="auth-lang-picker notranslate" translate="no">
+            <div class="lang-selector-container">
+                <div class="lang-select-wrapper">
+                    <svg class="lang-globe-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="2" y1="12" x2="22" y2="12"></line>
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10z"></path>
+                    </svg>
+                    <select class="lang-select notranslate" aria-label="Choose Language">
+                        <option value="en">English</option>
+                        <option value="hi">हिन्दी (Hindi)</option>
+                        <option value="bn">বাংলা (Bengali)</option>
+                        <option value="mr">मराठी (Marathi)</option>
+                        <option value="te">తెలుగు (Telugu)</option>
+                        <option value="ta">தமிழ் (Tamil)</option>
+                        <option value="gu">ગુજરાતી (Gujarati)</option>
+                        <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
+                        <option value="ur">اردو (Urdu)</option>
+                        <option value="kn">ಕನ್ನಡ (Kannada)</option>
+                        <option value="ml">മലയാളം (Malayalam)</option>
+                        <option value="or">ଓଡ଼ିଆ (Odia)</option>
+                    </select>
+                    <svg class="lang-arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
         <div class="auth-card">
 
             <div class="brand">
@@ -324,6 +353,7 @@
     </div>
 
 
+    <script src="language.js"></script>
     <script src="app.js"></script>
 
 </body>

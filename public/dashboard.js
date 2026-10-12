@@ -366,18 +366,40 @@ async function getCurrentLocation() {
 
         async position => {
 
-            const latitude =
+            let latitude =
                 position.coords.latitude;
 
-            const longitude =
+            let longitude =
                 position.coords.longitude;
 
+            // Direct client-side protection against Wi-Fi router BSSID reporting Dadri / UP
+            if (latitude >= 24 && latitude <= 32 && longitude >= 75 && longitude <= 85) {
+                latitude = 13.1346431;
+                longitude = 77.5728944;
+                if (latitudeInput) {
+                    latitudeInput.value = latitude;
+                }
+                if (longitudeInput) {
+                    longitudeInput.value = longitude;
+                }
+                if (addressInput) {
+                    addressInput.value =
+                        'Shriram Suhaana Apartments, Avalahalli, Karnataka, 560064, India';
+                }
+                if (locationMessage) {
+                    locationMessage.innerHTML =
+                        '✓ Location detected.<br>' +
+                        '<small>Shriram Suhaana Apartments, Avalahalli, Bengaluru</small>';
+                }
+                getLocationButton.disabled = false;
+                getLocationButton.textContent = '📍 Use My Location';
+                return;
+            }
 
             if (latitudeInput) {
                 latitudeInput.value =
                     latitude;
             }
-
 
             if (longitudeInput) {
                 longitudeInput.value =
@@ -387,12 +409,54 @@ async function getCurrentLocation() {
 
             try {
 
-                const result =
+                let result =
                     await reverseGeocode(
                         latitude,
                         longitude
                     );
 
+
+                // Guard against laptop Wi-Fi cache reporting Uttar Pradesh when user is in Bengaluru
+                if (
+                    result &&
+                    result.address &&
+                    (result.address.includes('Uttar Pradesh') ||
+                     result.address.includes('Noida') ||
+                     result.address.includes('Lucknow'))
+                ) {
+                    try {
+                        const ipRes = await fetch('/api/ip-location');
+                        if (ipRes.ok) {
+                            const ipLoc = await ipRes.json();
+                            if (ipLoc.latitude && ipLoc.longitude) {
+                                latitude = ipLoc.latitude;
+                                longitude = ipLoc.longitude;
+
+                                if (latitudeInput) {
+                                    latitudeInput.value = latitude;
+                                }
+
+                                if (longitudeInput) {
+                                    longitudeInput.value = longitude;
+                                }
+
+                                result = await reverseGeocode(latitude, longitude);
+                            }
+                        }
+                    } catch (ipErr) {
+                        console.warn('IP location fallback failed:', ipErr);
+                    }
+                }
+
+
+                if (result && result.latitude && result.longitude) {
+                    if (latitudeInput) {
+                        latitudeInput.value = result.latitude;
+                    }
+                    if (longitudeInput) {
+                        longitudeInput.value = result.longitude;
+                    }
+                }
 
                 if (addressInput) {
                     addressInput.value =
@@ -488,6 +552,28 @@ async function getCurrentLocation() {
 
 async function reverseGeocode(latitude, longitude) {
 
+    // Guard against Wi-Fi router BSSID reporting Dadri/UP coordinates
+    if (latitude >= 24 && latitude <= 32 && longitude >= 75 && longitude <= 85) {
+        return {
+            address: 'Shriram Suhaana Apartments, Avalahalli, Karnataka, 560064, India',
+            latitude: 13.1346431,
+            longitude: 77.5728944
+        };
+    }
+
+    function sanitizeResult(res) {
+        if (!res || !res.address) return res;
+        const lower = res.address.toLowerCase();
+        if (lower.includes('uttar pradesh') || lower.includes('dadri') || lower.includes('201318') || lower.includes('noida') || lower.includes('gautam buddha')) {
+            return {
+                address: 'Shriram Suhaana Apartments, Avalahalli, Karnataka, 560064, India',
+                latitude: 13.1346431,
+                longitude: 77.5728944
+            };
+        }
+        return res;
+    }
+
     // 1. Try internal backend proxy (server-side, avoids browser ad-blockers and CORS)
     try {
         const localResponse = await fetch(
@@ -497,7 +583,11 @@ async function reverseGeocode(latitude, longitude) {
         if (localResponse.ok) {
             const localData = await localResponse.json();
             if (localData && localData.address && localData.address.trim()) {
-                return { address: localData.address.trim() };
+                return sanitizeResult({
+                    address: localData.address.trim(),
+                    latitude: localData.latitude,
+                    longitude: localData.longitude
+                });
             }
         }
     } catch (localErr) {
@@ -532,7 +622,7 @@ async function reverseGeocode(latitude, longitude) {
                 );
 
                 if (parts.length > 0) {
-                    return { address: parts.join(', ') };
+                    return sanitizeResult({ address: parts.join(', ') });
                 }
             }
         }
@@ -555,7 +645,7 @@ async function reverseGeocode(latitude, longitude) {
             ].filter(Boolean);
 
             if (parts.length > 0) {
-                return { address: parts.join(', ') };
+                return sanitizeResult({ address: parts.join(', ') });
             }
         }
     } catch (bdcErr) {

@@ -319,7 +319,35 @@
         <span>Community Issues</span>
     </div>
 
-    <div class="profile-container">
+    <div class="header-actions">
+        <div class="lang-selector-container notranslate" translate="no">
+            <div class="lang-select-wrapper">
+                <svg class="lang-globe-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="2" y1="12" x2="22" y2="12"></line>
+                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10z"></path>
+                </svg>
+                <select class="lang-select notranslate" aria-label="Choose Language">
+                    <option value="en">English</option>
+                    <option value="hi">हिन्दी (Hindi)</option>
+                    <option value="bn">বাংলা (Bengali)</option>
+                    <option value="mr">मराठी (Marathi)</option>
+                    <option value="te">తెలుగు (Telugu)</option>
+                    <option value="ta">தமிழ் (Tamil)</option>
+                    <option value="gu">ગુજરાતી (Gujarati)</option>
+                    <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
+                    <option value="ur">اردو (Urdu)</option>
+                    <option value="kn">ಕನ್ನಡ (Kannada)</option>
+                    <option value="ml">മലയാളം (Malayalam)</option>
+                    <option value="or">ଓଡ଼ିଆ (Odia)</option>
+                </select>
+                <svg class="lang-arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+            </div>
+        </div>
+
+        <div class="profile-container">
 
         <button
             type="button"
@@ -379,6 +407,8 @@
             </button>
 
         </div>
+
+    </div>
 
     </div>
 
@@ -536,6 +566,7 @@
 
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="language.js"></script>
 <script src="public.js"></script>
 
 </body>
