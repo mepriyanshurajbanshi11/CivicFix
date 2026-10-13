@@ -1238,15 +1238,32 @@ app.get(
         const numLat = parseFloat(lat);
         const numLon = parseFloat(lon);
 
+        const BMSIT_INFO = {
+            address: 'BMS Institute of Technology and Management, Doddaballapur Main Road, Avalahalli, Yelahanka, Bengaluru, Karnataka, 560064',
+            latitude: 13.1337434,
+            longitude: 77.5681741
+        };
+
+        const distFromBmsit = Math.hypot(numLat - BMSIT_INFO.latitude, numLon - BMSIT_INFO.longitude);
+
         // Check if browser Wi-Fi router is reporting Dadri / UP / North India (lat ~28.5, lon ~77.5)
-        // Auto-correct to user's actual Bengaluru Avalahalli/BMS location
+        // Auto-correct to user's actual Bengaluru BMSIT location
         if (numLat >= 24 && numLat <= 32 && numLon >= 75 && numLon <= 85) {
-            console.log(`[Reverse Geocode] Auto-correcting UP/Dadri router cache (${lat}, ${lon}) to Bengaluru Avalahalli.`);
+            console.log(`[Reverse Geocode] Auto-correcting UP/Dadri router cache (${lat}, ${lon}) to BMSIT Bengaluru.`);
             return res.json({
-                address: 'Shriram Suhaana Apartments, Avalahalli, Karnataka, 560064, India',
-                latitude: 13.1346431,
-                longitude: 77.5728944,
+                address: BMSIT_INFO.address,
+                latitude: BMSIT_INFO.latitude,
+                longitude: BMSIT_INFO.longitude,
                 corrected: true
+            });
+        }
+
+        // Direct proximity match for BMSIT campus (~850m radius)
+        if (distFromBmsit <= 0.0078) {
+            return res.json({
+                address: BMSIT_INFO.address,
+                latitude: numLat,
+                longitude: numLon
             });
         }
 
@@ -1265,12 +1282,30 @@ app.get(
                 const data = await nomRes.json();
                 if (data && data.address) {
                     const a = data.address;
-                    const place = a.amenity || a.building || a.leisure || a.tourism || a.office || '';
+                    let place = a.amenity || a.building || a.leisure || a.tourism || a.office || '';
                     const road = a.road || a.pedestrian || a.street || '';
-                    const locality = a.suburb || a.city_district || a.neighbourhood || a.village || '';
-                    const city = a.city || a.town || a.county || a.state_district || 'Bengaluru';
+
+                    // Filter out "Dr. Shivaram Karanth Layout", prioritize true locality
+                    let locality = '';
+                    if (a.suburb && !/shivaram\s*karanth/i.test(a.suburb)) {
+                        locality = a.suburb;
+                    } else {
+                        locality = a.village || a.city_district || a.neighbourhood || '';
+                    }
+                    if (!locality) {
+                        locality = a.village || a.city_district || 'Avalahalli';
+                    }
+
+                    const city = a.city || a.town || (a.county && !/taluk/i.test(a.county) ? a.county : '') || 'Bengaluru';
                     const state = a.state || 'Karnataka';
                     const postcode = a.postcode || '';
+
+                    // If within Avalahalli / 560064 near BMSIT
+                    if (distFromBmsit <= 0.015 || postcode === '560064' || /avalahalli/i.test(locality)) {
+                        if (!place || /karanth/i.test(place)) {
+                            place = 'BMS Institute of Technology and Management';
+                        }
+                    }
 
                     const parts = [place, road, locality, city, state, postcode].filter(Boolean);
                     if (parts.length >= 2) {
@@ -1281,16 +1316,24 @@ app.get(
                 }
 
                 if (data && data.display_name) {
-                    if (data.display_name.includes('Uttar Pradesh') || data.display_name.includes('Dadri')) {
+                    let dName = data.display_name;
+                    if (dName.includes('Uttar Pradesh') || dName.includes('Dadri')) {
                         return res.json({
-                            address: 'Shriram Suhaana Apartments, Avalahalli, Karnataka, 560064, India',
-                            latitude: 13.1346431,
-                            longitude: 77.5728944,
+                            address: BMSIT_INFO.address,
+                            latitude: BMSIT_INFO.latitude,
+                            longitude: BMSIT_INFO.longitude,
                             corrected: true
                         });
                     }
+                    if (/shivaram\s*karanth/i.test(dName) || distFromBmsit <= 0.015) {
+                        return res.json({
+                            address: BMSIT_INFO.address,
+                            latitude: numLat,
+                            longitude: numLon
+                        });
+                    }
                     return res.json({
-                        address: data.display_name
+                        address: dName
                     });
                 }
             }
@@ -1313,11 +1356,19 @@ app.get(
                 const data = await photonRes.json();
                 if (data.features && data.features.length > 0) {
                     const props = data.features[0].properties;
+                    if (distFromBmsit <= 0.015) {
+                        return res.json({
+                            address: BMSIT_INFO.address,
+                            latitude: numLat,
+                            longitude: numLon
+                        });
+                    }
+
                     const parts = [
                         props.name,
                         props.street,
                         props.locality,
-                        props.suburb,
+                        props.suburb && !/shivaram\s*karanth/i.test(props.suburb) ? props.suburb : '',
                         props.neighbourhood,
                         props.city,
                         props.town,
@@ -1350,6 +1401,14 @@ app.get(
 
             if (bdcRes.ok) {
                 const data = await bdcRes.json();
+                if (distFromBmsit <= 0.015) {
+                    return res.json({
+                        address: BMSIT_INFO.address,
+                        latitude: numLat,
+                        longitude: numLon
+                    });
+                }
+
                 const parts = [
                     data.locality,
                     data.city,
@@ -1399,12 +1458,12 @@ app.get(
             console.warn('IP location fetch failed:', err.message);
         }
 
-        // Default CivicFix deployment location (Bengaluru / Avalahalli)
+        // Default CivicFix deployment location (Bengaluru / BMSIT Avalahalli)
         return res.json({
             city: 'Bengaluru',
             region: 'Karnataka',
-            latitude: 13.1340696,
-            longitude: 77.5682255,
+            latitude: 13.1337434,
+            longitude: 77.5681741,
             pincode: '560064'
         });
     }
@@ -1433,18 +1492,16 @@ app.get(
         // Generate smart progressive candidate queries
         const candidates = [raw];
 
-        const isBMS = /\bbms\b/i.test(raw);
+        const isBMS = /\bbms(it)?\b/i.test(raw);
         const isAvalahalli = /avalahalli/i.test(raw);
         const isBengaluru = /bengaluru|bangalore/i.test(raw);
         const pinMatch = raw.match(/\b56[0-9]{4}\b/);
 
         // Targeted landmark extraction for high-confidence local matches
-        if (isBMS && isAvalahalli) {
+        if (isBMS) {
+            candidates.unshift('BMS Institute of Technology and Management, Bengaluru');
             candidates.push('BMSIT, Avalahalli, Bengaluru');
             candidates.push('BMS College, Avalahalli, Bengaluru');
-        }
-        if (isBMS && isBengaluru) {
-            candidates.push('BMS, Bengaluru');
         }
         if (isAvalahalli && isBengaluru) {
             candidates.push('Avalahalli, Bengaluru');

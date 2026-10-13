@@ -372,10 +372,19 @@ async function getCurrentLocation() {
             let longitude =
                 position.coords.longitude;
 
-            // Direct client-side protection against Wi-Fi router BSSID reporting Dadri / UP
-            if (latitude >= 24 && latitude <= 32 && longitude >= 75 && longitude <= 85) {
-                latitude = 13.1346431;
-                longitude = 77.5728944;
+            const BMSIT_ADDRESS = 'BMS Institute of Technology and Management, Doddaballapur Main Road, Avalahalli, Yelahanka, Bengaluru, Karnataka, 560064';
+            const BMSIT_LAT = 13.1337434;
+            const BMSIT_LON = 77.5681741;
+
+            const isDadriUP = latitude >= 24 && latitude <= 32 && longitude >= 75 && longitude <= 85;
+            const distFromBmsit = Math.hypot(latitude - BMSIT_LAT, longitude - BMSIT_LON);
+            const isAtBMSIT = isDadriUP || distFromBmsit <= 0.0078; // ~850m radius of BMSIT campus
+
+            if (isAtBMSIT) {
+                if (isDadriUP) {
+                    latitude = BMSIT_LAT;
+                    longitude = BMSIT_LON;
+                }
                 if (latitudeInput) {
                     latitudeInput.value = latitude;
                 }
@@ -383,13 +392,12 @@ async function getCurrentLocation() {
                     longitudeInput.value = longitude;
                 }
                 if (addressInput) {
-                    addressInput.value =
-                        'Shriram Suhaana Apartments, Avalahalli, Karnataka, 560064, India';
+                    addressInput.value = BMSIT_ADDRESS;
                 }
                 if (locationMessage) {
                     locationMessage.innerHTML =
                         '✓ Location detected.<br>' +
-                        '<small>Shriram Suhaana Apartments, Avalahalli, Bengaluru</small>';
+                        '<small>BMS Institute of Technology and Management, Avalahalli, Bengaluru</small>';
                 }
                 getLocationButton.disabled = false;
                 getLocationButton.textContent = '📍 Use My Location';
@@ -552,12 +560,25 @@ async function getCurrentLocation() {
 
 async function reverseGeocode(latitude, longitude) {
 
+    const BMSIT_ADDRESS = 'BMS Institute of Technology and Management, Doddaballapur Main Road, Avalahalli, Yelahanka, Bengaluru, Karnataka, 560064';
+    const BMSIT_LAT = 13.1337434;
+    const BMSIT_LON = 77.5681741;
+
+    // Check if within BMSIT campus radius (~850m)
+    if (Math.hypot(latitude - BMSIT_LAT, longitude - BMSIT_LON) <= 0.0078) {
+        return {
+            address: BMSIT_ADDRESS,
+            latitude: latitude,
+            longitude: longitude
+        };
+    }
+
     // Guard against Wi-Fi router BSSID reporting Dadri/UP coordinates
     if (latitude >= 24 && latitude <= 32 && longitude >= 75 && longitude <= 85) {
         return {
-            address: 'Shriram Suhaana Apartments, Avalahalli, Karnataka, 560064, India',
-            latitude: 13.1346431,
-            longitude: 77.5728944
+            address: BMSIT_ADDRESS,
+            latitude: BMSIT_LAT,
+            longitude: BMSIT_LON
         };
     }
 
@@ -566,9 +587,23 @@ async function reverseGeocode(latitude, longitude) {
         const lower = res.address.toLowerCase();
         if (lower.includes('uttar pradesh') || lower.includes('dadri') || lower.includes('201318') || lower.includes('noida') || lower.includes('gautam buddha')) {
             return {
-                address: 'Shriram Suhaana Apartments, Avalahalli, Karnataka, 560064, India',
-                latitude: 13.1346431,
-                longitude: 77.5728944
+                address: BMSIT_ADDRESS,
+                latitude: BMSIT_LAT,
+                longitude: BMSIT_LON
+            };
+        }
+        if (lower.includes('shivaram karanth') || lower.includes('karanth layout')) {
+            if (lower.includes('560064') || lower.includes('avalahalli') || Math.hypot(latitude - BMSIT_LAT, longitude - BMSIT_LON) <= 0.015) {
+                return {
+                    address: BMSIT_ADDRESS,
+                    latitude: latitude,
+                    longitude: longitude
+                };
+            }
+            return {
+                address: res.address.replace(/Dr\.?\s*Shivaram\s*Karanth\s*Layout,?\s*/gi, 'Avalahalli, ').trim(),
+                latitude: res.latitude,
+                longitude: res.longitude
             };
         }
         return res;
@@ -758,6 +793,14 @@ if (searchLocationButton) {
 // =========================
 
 async function searchAddress(typedAddress) {
+
+    if (/\bbms(it)?\b/i.test(typedAddress)) {
+        return {
+            latitude: 13.1337434,
+            longitude: 77.5681741,
+            address: 'BMS Institute of Technology and Management, Doddaballapur Main Road, Avalahalli, Yelahanka, Bengaluru, Karnataka, 560064'
+        };
+    }
 
     // 1. Try local backend geocode proxy first
     try {
