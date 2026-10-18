@@ -6,199 +6,237 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Issue Details - CivicFix</title>
+    <meta name="description" content="CivicFix Issue Details — Review full description, GPS coordinates, verified evidence photos, and community comments.">
+
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0284c7">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
 
     <link rel="stylesheet" href="style.css">
+    <script src="theme.js"></script>
+    <script src="icons.js"></script>
 </head>
 
 <body>
+<a href="#main-content" class="skip-link">Skip to issue details</a>
 
-<header class="dashboard-header">
+<div class="app-shell">
 
-    <div class="header-title">
-        <h1>CivicFix</h1>
-        <span>Smart Civic Issue & Road Hazard Tracker</span>
-    </div>
-
-    <div class="header-actions">
-        <div class="lang-selector-container notranslate" translate="no">
-            <div class="lang-select-wrapper">
-                <svg class="lang-globe-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="2" y1="12" x2="22" y2="12"></line>
-                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10z"></path>
-                </svg>
-                <select class="lang-select notranslate" aria-label="Choose Language">
-                    <option value="en">English</option>
-                    <option value="hi">हिन्दी (Hindi)</option>
-                    <option value="bn">বাংলা (Bengali)</option>
-                    <option value="mr">मराठी (Marathi)</option>
-                    <option value="te">తెలుగు (Telugu)</option>
-                    <option value="ta">தமிழ் (Tamil)</option>
-                    <option value="gu">ગુજરાતી (Gujarati)</option>
-                    <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
-                    <option value="ur">اردو (Urdu)</option>
-                    <option value="kn">ಕನ್ನಡ (Kannada)</option>
-                    <option value="ml">മലയാളം (Malayalam)</option>
-                    <option value="or">ଓଡ଼ିଆ (Odia)</option>
-                </select>
-                <svg class="lang-arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="6 9 12 15 18 9"></polyline>
-                </svg>
-            </div>
-        </div>
-
-        <div class="profile-container">
-
-        <button
-            type="button"
-            id="profileButton"
-            class="profile-button">
-
-            <span id="profileInitial">P</span>
-
-        </button>
-
-
-        <div
-            id="profileMenu"
-            class="profile-menu">
-
-            <div class="profile-info">
-
-                <strong id="profileName">
-                    Citizen
-                </strong>
-
-                <small id="profileEmail">
-                    email@example.com
-                </small>
-
-                <span
-                    id="profileRole"
-                    class="profile-role">
-                    CITIZEN
-                </span>
-
+    <!-- DESKTOP APP SIDEBAR -->
+    <aside class="app-sidebar" aria-label="Main Navigation">
+        <div>
+            <div class="sidebar-header">
+                <div class="sidebar-logo-icon" aria-hidden="true" data-icon="landmark">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" y1="21" x2="21" y2="21"/><line x1="6" y1="18" x2="6" y2="11"/><line x1="10" y1="18" x2="10" y2="11"/><line x1="14" y1="18" x2="14" y2="11"/><line x1="18" y1="18" x2="18" y2="11"/><polygon points="12 2 20 7 4 7"/><line x1="2" y1="21" x2="22" y2="21"/></svg>
+                </div>
+                <div class="sidebar-brand-text">
+                    <h1>Civic<span>Fix</span></h1>
+                    <p>Smart Civic Issue Tracker</p>
+                </div>
             </div>
 
-
-            <button
-                type="button"
-                id="dashboardButton">
-                🏠 Dashboard
-            </button>
-
-
-            <button
-                type="button"
-                id="communityButton">
-                🌐 Community Issues
-            </button>
-
-
-            <button
-                type="button"
-                id="myReportsButton">
-                📋 My Reports
-            </button>
-
-
-            <button
-                type="button"
-                id="adminDashboardButton"
-                style="display: none;">
-                🛠️ Admin Dashboard
-            </button>
-
-
-            <button
-                type="button"
-                id="logoutButton"
-                class="logout-button">
-                🚪 Logout
-            </button>
-
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="sidebar-link">
+                    <span class="sidebar-link-icon" data-icon="dashboard"></span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="issues.html" class="sidebar-link active" id="sidebarCommunityLink">
+                    <span class="sidebar-link-icon" data-icon="globe"></span>
+                    <span>Community Issues</span>
+                </a>
+                <a href="my-reports.html" class="sidebar-link" id="sidebarMyReportsLink">
+                    <span class="sidebar-link-icon" data-icon="reports"></span>
+                    <span>My Reports</span>
+                </a>
+                <a href="issues.html?view=map" class="sidebar-link">
+                    <span class="sidebar-link-icon" data-icon="map"></span>
+                    <span>City Map</span>
+                </a>
+                <a href="admin.html" class="sidebar-link" id="sidebarAdminLink" style="display: none;">
+                    <span class="sidebar-link-icon" data-icon="admin"></span>
+                    <span>Admin Panel</span>
+                </a>
+            </nav>
         </div>
 
-    </div>
+        <div class="sidebar-footer">
+            <div class="sidebar-user-card">
+                <div class="sidebar-user-avatar" id="sidebarUserAvatar">P</div>
+                <div class="sidebar-user-meta">
+                    <div class="sidebar-user-name" id="sidebarUserName">Citizen</div>
+                    <div class="sidebar-user-role" id="sidebarUserRole">CITIZEN</div>
+                </div>
+            </div>
+            <button type="button" id="sidebarLogoutBtn" class="location-button secondary btn-sidebar-logout">
+                <span data-icon="logout"></span>
+                <span>Logout</span>
+            </button>
+        </div>
+    </aside>
 
-    </div>
+    <!-- APP MAIN CONTENT WRAPPER -->
+    <div class="app-main">
 
-</header>
-
-
-<main class="container">
-
-
-    <button
-        type="button"
-        id="backButton"
-        class="back-button">
-
-        ← Back
-
-    </button>
-
-
-    <section
-        id="issueDetails"
-        class="issue-details-card">
-
-        <p>
-            Loading issue details...
-        </p>
-
-    </section>
-
-
-    <!-- COMMENTS -->
-
-    <section class="issue-details-card comments-section">
-
-        <h2>
-            💬 Comments
-        </h2>
-
-
-        <form id="commentForm">
-
-            <div class="form-group">
-
-                <textarea
-                    id="commentInput"
-                    placeholder="Write a comment..."
-                    maxlength="500"
-                    required>
-                </textarea>
-
+        <!-- MODERN TOPBAR -->
+        <header class="app-topbar">
+            <div class="topbar-search-box">
+                <span class="topbar-search-icon" data-icon="search"></span>
+                <input
+                    type="text"
+                    id="topbarSearchInput"
+                    class="topbar-search-input"
+                    placeholder="Search issues, roads, places..."
+                >
             </div>
 
+            <div class="topbar-actions">
+                <a href="dashboard.html#wizardCard" class="btn-report-header">
+                    <span data-icon="plus"></span>
+                    <span>Report Issue</span>
+                </a>
+
+                <button
+                    type="button"
+                    id="themeToggleBtn"
+                    class="theme-toggle-btn"
+                    title="Toggle Dark / Light Mode"
+                    aria-label="Toggle Dark / Light Mode"
+                >
+                </button>
+
+                <div class="lang-selector-container notranslate" translate="no">
+                    <div class="lang-select-wrapper">
+                        <svg class="lang-globe-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="2" y1="12" x2="22" y2="12"></line>
+                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10z"></path>
+                        </svg>
+                        <select class="lang-select notranslate" aria-label="Choose Language">
+                            <option value="en">English</option>
+                            <option value="hi">हिन्दी (Hindi)</option>
+                            <option value="bn">বাংলা (Bengali)</option>
+                            <option value="mr">मराठी (Marathi)</option>
+                            <option value="te">తెలుగు (Telugu)</option>
+                            <option value="ta">தமிழ் (Tamil)</option>
+                            <option value="gu">ગુજરાતી (Gujarati)</option>
+                            <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
+                            <option value="ur">اردو (Urdu)</option>
+                            <option value="kn">ಕನ್ನಡ (Kannada)</option>
+                            <option value="ml">മലയാളം (Malayalam)</option>
+                            <option value="or">ଓଡ଼ିଆ (Odia)</option>
+                        </select>
+                        <svg class="lang-arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Profile Dropdown -->
+                <div class="profile-container">
+                    <button
+                        type="button"
+                        id="profileButton"
+                        class="profile-button">
+                        <span id="profileInitial">P</span>
+                    </button>
+
+                    <div id="profileMenu" class="profile-menu">
+                        <div class="profile-info">
+                            <strong id="profileName">Citizen</strong>
+                            <small id="profileEmail">email@example.com</small>
+                            <span id="profileRole" class="profile-role">CITIZEN</span>
+                        </div>
+                        <button type="button" id="dashboardButton"><span data-icon="dashboard"></span> <span>Dashboard</span></button>
+                        <button type="button" id="communityButton"><span data-icon="globe"></span> <span>Community Issues</span></button>
+                        <button type="button" id="myReportsButton"><span data-icon="reports"></span> <span>My Reports</span></button>
+                        <button type="button" id="adminDashboardButton" style="display: none;"><span data-icon="admin"></span> <span>Admin Dashboard</span></button>
+                        <button type="button" id="logoutButton" class="logout-button"><span data-icon="logout"></span> <span>Logout</span></button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- MAIN ISSUE DETAILS BODY -->
+        <main class="app-content" id="main-content">
 
             <button
-                type="submit"
-                class="auth-button">
-
-                Add Comment
-
+                type="button"
+                id="backButton"
+                class="location-button secondary"
+                style="margin-bottom: 20px; width: auto; padding: 8px 18px; font-size: 14px; font-weight: 700;">
+                ← Back to Feed
             </button>
 
-        </form>
+            <section
+                id="issueDetails"
+                class="issue-details-card"
+                style="border-radius: var(--radius-xl); padding: 28px; box-shadow: var(--card-shadow); margin-bottom: 24px;">
+                <p>Loading issue details...</p>
+            </section>
 
+            <!-- COMMENTS -->
+            <section class="issue-details-card comments-section" style="border-radius: var(--radius-xl); padding: 28px; box-shadow: var(--card-shadow);">
+                <h2 style="font-size: 20px; font-weight: 800; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                    <span data-icon="comment"></span>
+                    <span>Citizen Comments</span>
+                </h2>
 
-        <div
-            id="commentsList"
-            class="comments-list">
+                <form id="commentForm">
+                    <div class="form-group">
+                        <textarea
+                            id="commentInput"
+                            placeholder="Share an update or feedback on this civic issue..."
+                            maxlength="500"
+                            rows="3"
+                            required>
+                        </textarea>
+                    </div>
 
-            <p>
-                Loading comments...
-            </p>
+                    <button
+                        type="submit"
+                        class="btn-report-header"
+                        style="width: auto; height: 40px; padding: 0 22px;">
+                        Add Comment
+                    </button>
+                </form>
 
-        </div>
+                <div
+                    id="commentsList"
+                    class="comments-list"
+                    style="margin-top: 24px;">
+                    <p>Loading comments...</p>
+                </div>
+            </section>
 
-    </section>
+        </main>
+    </div>
 
-</main>
+</div>
 
+<!-- MOBILE BOTTOM NAVIGATION BAR -->
+<nav class="mobile-bottom-nav" aria-label="Mobile Navigation">
+    <a href="dashboard.html" class="mobile-nav-btn">
+        <span class="mobile-nav-icon" data-icon="dashboard"></span>
+        <span>Dashboard</span>
+    </a>
+    <a href="issues.html" class="mobile-nav-btn active">
+        <span class="mobile-nav-icon" data-icon="globe"></span>
+        <span>Issues</span>
+    </a>
+    <a href="issues.html?view=map" class="mobile-nav-btn">
+        <span class="mobile-nav-icon" data-icon="map"></span>
+        <span>Map</span>
+    </a>
+    <a href="my-reports.html" class="mobile-nav-btn">
+        <span class="mobile-nav-icon" data-icon="reports"></span>
+        <span>My Reports</span>
+    </a>
+</nav>
+
+<!-- MOBILE FLOATING ACTION BUTTON (FAB) -->
+<a href="dashboard.html#wizardCard" class="mobile-fab" title="Report New Issue" aria-label="Report New Issue" data-icon="plus">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+</a>
 
 <script src="language.js"></script>
 <script src="issue.js"></script>

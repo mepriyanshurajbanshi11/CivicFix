@@ -4,16 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>CivicFix</title>
+    <title>CivicFix - Citizen Portal</title>
+    <meta name="description" content="CivicFix — Smart civic issue and road hazard tracker for citizens. Report potholes, streetlights, and sanitation problems.">
+
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0284c7">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
 
     <link rel="stylesheet" href="style.css">
+    <script src="theme.js"></script>
+    <script src="icons.js"></script>
 </head>
 
 <body>
+    <a href="#loginForm" class="skip-link">Skip to login</a>
 
     <div class="auth-container">
 
         <div class="auth-lang-picker notranslate" translate="no">
+            <button
+                type="button"
+                id="themeToggleBtn"
+                class="theme-toggle-btn"
+                title="Toggle Dark / Light Mode"
+                aria-label="Toggle Dark / Light Mode"
+            >
+            </button>
             <div class="lang-selector-container">
                 <div class="lang-select-wrapper">
                     <svg class="lang-globe-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -44,9 +60,12 @@
 
         <div class="auth-card">
 
-            <div class="brand">
-                <h1>CivicFix</h1>
-                <p>Smart Civic Issue & Road Hazard Tracker</p>
+            <div class="brand" style="text-align: center; margin-bottom: 24px;">
+                <div class="auth-brand-badge" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="21" x2="21" y2="21"/><line x1="6" y1="18" x2="6" y2="11"/><line x1="10" y1="18" x2="10" y2="11"/><line x1="14" y1="18" x2="14" y2="11"/><line x1="18" y1="18" x2="18" y2="11"/><polygon points="12 2 20 7 4 7"/><line x1="2" y1="21" x2="22" y2="21"/></svg>
+                </div>
+                <h1 style="font-size: 26px; font-weight: 800; letter-spacing: -0.5px;">Civic<span style="color: var(--primary);">Fix</span></h1>
+                <p style="color: var(--muted); font-size: 13px;">Smart Civic Issue & Road Hazard Tracker</p>
             </div>
 
 
@@ -70,12 +89,23 @@
                     <div class="form-group">
                         <label for="loginPassword">Password</label>
 
-                        <input
-                            type="password"
-                            id="loginPassword"
-                            placeholder="Enter your password"
-                            required
-                        >
+                        <div class="password-input-wrapper">
+                            <input
+                                type="password"
+                                id="loginPassword"
+                                placeholder="Enter your password"
+                                required
+                            >
+                            <button
+                                type="button"
+                                class="password-toggle-btn"
+                                aria-label="Show password"
+                                aria-pressed="false"
+                                title="Show password"
+                            >
+                                <span class="password-toggle-icon" data-icon="eye" aria-hidden="true"></span>
+                            </button>
+                        </div>
                     </div>
 
                     <button
@@ -184,12 +214,23 @@
                                 New Password
                             </label>
 
-                            <input
-                                type="password"
-                                id="newPassword"
-                                placeholder="Enter new password"
-                                required
-                            >
+                            <div class="password-input-wrapper">
+                                <input
+                                    type="password"
+                                    id="newPassword"
+                                    placeholder="Enter new password"
+                                    required
+                                >
+                                <button
+                                    type="button"
+                                    class="password-toggle-btn"
+                                    aria-label="Show password"
+                                    aria-pressed="false"
+                                    title="Show password"
+                                >
+                                    <span class="password-toggle-icon" data-icon="eye" aria-hidden="true"></span>
+                                </button>
+                            </div>
                         </div>
 
                         <div class="form-group">
@@ -197,12 +238,23 @@
                                 Confirm Password
                             </label>
 
-                            <input
-                                type="password"
-                                id="confirmPassword"
-                                placeholder="Confirm new password"
-                                required
-                            >
+                            <div class="password-input-wrapper">
+                                <input
+                                    type="password"
+                                    id="confirmPassword"
+                                    placeholder="Confirm new password"
+                                    required
+                                >
+                                <button
+                                    type="button"
+                                    class="password-toggle-btn"
+                                    aria-label="Show password"
+                                    aria-pressed="false"
+                                    title="Show password"
+                                >
+                                    <span class="password-toggle-icon" data-icon="eye" aria-hidden="true"></span>
+                                </button>
+                            </div>
                         </div>
 
                         <button
@@ -273,12 +325,23 @@
                             Password
                         </label>
 
-                        <input
-                            type="password"
-                            id="registerPassword"
-                            placeholder="Create a password"
-                            required
-                        >
+                        <div class="password-input-wrapper">
+                            <input
+                                type="password"
+                                id="registerPassword"
+                                placeholder="Create a password"
+                                required
+                            >
+                            <button
+                                type="button"
+                                class="password-toggle-btn"
+                                aria-label="Show password"
+                                aria-pressed="false"
+                                title="Show password"
+                            >
+                                <span class="password-toggle-icon" data-icon="eye" aria-hidden="true"></span>
+                            </button>
+                        </div>
                     </div>
 
                     <button

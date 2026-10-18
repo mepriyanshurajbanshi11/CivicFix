@@ -37,14 +37,14 @@ const profileEmail =
 const profileRole =
     document.getElementById('profileRole');
 
-const dashboardButton =
-    document.getElementById('dashboardButton');
+const adminOverviewButton =
+    document.getElementById('adminOverviewButton');
 
 const communityButton =
     document.getElementById('communityButton');
 
-const myReportsButton =
-    document.getElementById('myReportsButton');
+const cityMapButton =
+    document.getElementById('cityMapButton');
 
 const logoutButton =
     document.getElementById('logoutButton');
@@ -64,24 +64,40 @@ const progressCount =
 const resolvedCount =
     document.getElementById('resolvedCount');
 
+const totalCount =
+    document.getElementById('totalCount');
+
+let allAdminIssues = [];
 
 // =========================
-// PROFILE
+// PROFILE & SIDEBAR
 // =========================
 
-profileInitial.textContent =
-    user.name
-        ? user.name.charAt(0).toUpperCase()
-        : 'A';
+const adminInitial = user.name ? user.name.charAt(0).toUpperCase() : 'A';
+const adminNameStr = user.name || 'Admin';
+const adminRoleStr = user.role || 'ADMIN';
 
-profileName.textContent =
-    user.name || 'Admin';
+profileInitial.textContent = adminInitial;
+profileName.textContent = adminNameStr;
+profileEmail.textContent = user.email || '';
+profileRole.textContent = adminRoleStr;
 
-profileEmail.textContent =
-    user.email || '';
+const sidebarUserAvatar = document.getElementById('sidebarUserAvatar');
+const sidebarUserName = document.getElementById('sidebarUserName');
+const sidebarUserRole = document.getElementById('sidebarUserRole');
+const sidebarLogoutBtn = document.getElementById('sidebarLogoutBtn');
 
-profileRole.textContent =
-    user.role || 'ADMIN';
+if (sidebarUserAvatar) sidebarUserAvatar.textContent = adminInitial;
+if (sidebarUserName) sidebarUserName.textContent = adminNameStr;
+if (sidebarUserRole) sidebarUserRole.textContent = adminRoleStr;
+
+if (sidebarLogoutBtn) {
+    sidebarLogoutBtn.addEventListener('click', () => {
+        localStorage.removeItem('civic_token');
+        localStorage.removeItem('civic_user');
+        window.location.href = '/';
+    });
+}
 
 
 profileButton.addEventListener('click', () => {
@@ -109,78 +125,74 @@ document.addEventListener('click', (event) => {
 // NAVIGATION
 // =========================
 
-dashboardButton.addEventListener('click', () => {
+if (adminOverviewButton) {
+    adminOverviewButton.addEventListener('click', () => {
+        window.location.href = '/admin.html';
+    });
+}
 
-    window.location.href =
-        '/dashboard.html';
+if (communityButton) {
+    communityButton.addEventListener('click', () => {
+        window.location.href = '/issues.html';
+    });
+}
 
-});
+if (cityMapButton) {
+    cityMapButton.addEventListener('click', () => {
+        window.location.href = '/issues.html?view=map';
+    });
+}
 
+if (logoutButton) {
+    logoutButton.addEventListener('click', () => {
+        localStorage.removeItem('civic_token');
+        localStorage.removeItem('civic_user');
+        window.location.href = '/';
+    });
+}
 
-communityButton.addEventListener('click', () => {
-
-    window.location.href =
-        '/issues.html';
-
-});
-
-
-myReportsButton.addEventListener('click', () => {
-
-    window.location.href =
-        '/my-reports.html';
-
-});
-
-
-logoutButton.addEventListener('click', () => {
-
-    localStorage.removeItem('civic_token');
-    localStorage.removeItem('civic_user');
-
-    window.location.href = '/';
-
-});
-
-
-refreshButton.addEventListener('click', () => {
-
-    loadAdminDashboard();
-
-});
+if (refreshButton) {
+    refreshButton.addEventListener('click', () => {
+        loadAdminDashboard();
+    });
+}
 
 
 // =========================
-// MESSAGE
+// MESSAGE TOAST NOTIFICATION
 // =========================
 
 function showMessage(message, type = 'success') {
+    const oldMessages = document.querySelectorAll('.page-message-toast');
+    oldMessages.forEach(el => el.remove());
 
-    const oldMessage =
-        document.querySelector('.page-message');
+    const messageBox = document.createElement('div');
+    messageBox.className = `page-message-toast ${type}`;
+    messageBox.style.cssText = `
+        position: fixed;
+        top: 24px;
+        right: 24px;
+        z-index: 99999;
+        padding: 14px 22px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 14px;
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22);
+        background: ${type === 'success' ? '#16a34a' : '#dc2626'};
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        max-width: 420px;
+        transition: opacity 0.3s ease;
+    `;
 
-    if (oldMessage) {
-        oldMessage.remove();
-    }
-
-    const messageBox =
-        document.createElement('div');
-
-    messageBox.className =
-        `page-message ${type}`;
-
-    messageBox.textContent =
-        message;
-
-    const container =
-        document.querySelector('.container');
-
-    container.prepend(messageBox);
+    messageBox.textContent = message;
+    document.body.appendChild(messageBox);
 
     setTimeout(() => {
-
-        messageBox.remove();
-
+        messageBox.style.opacity = '0';
+        setTimeout(() => messageBox.remove(), 300);
     }, 4000);
 }
 
@@ -194,11 +206,17 @@ async function loadAdminDashboard() {
     refreshButton.disabled = true;
     refreshButton.textContent = 'Loading...';
 
-    adminIssuesList.innerHTML = `
-        <div class="empty-state">
-            <p>Loading reports...</p>
+    adminIssuesList.innerHTML = Array.from({ length: 4 }, () => `
+        <div class="community-issue-card skeleton-card" style="margin-bottom: 16px;">
+            <div class="skeleton-photo skeleton-box" style="height: 180px;"></div>
+            <div class="community-issue-content">
+                <div class="skeleton-line skeleton-box" style="width: 40%; height: 14px; margin-bottom: 12px;"></div>
+                <div class="skeleton-line skeleton-box" style="width: 80%; height: 20px; margin-bottom: 10px;"></div>
+                <div class="skeleton-line skeleton-box" style="width: 95%; height: 14px; margin-bottom: 16px;"></div>
+                <div class="skeleton-line skeleton-box" style="width: 50%; height: 14px;"></div>
+            </div>
         </div>
-    `;
+    `).join('');
 
     try {
 
@@ -227,37 +245,33 @@ async function loadAdminDashboard() {
         }
 
 
-        openCount.textContent =
-            stats.OPEN || 0;
+        const openVal = Number(stats.OPEN || 0);
+        const progVal = Number(stats.IN_PROGRESS || 0);
+        const resVal = Number(stats.RESOLVED || 0);
+        const totalVal = openVal + progVal + resVal;
 
-        progressCount.textContent =
-            stats.IN_PROGRESS || 0;
-
-        resolvedCount.textContent =
-            stats.RESOLVED || 0;
-
+        openCount.textContent = openVal;
+        progressCount.textContent = progVal;
+        resolvedCount.textContent = resVal;
+        if (totalCount) totalCount.textContent = totalVal;
 
         // Load all reports
-
         const issuesResponse =
             await fetch('/api/issues');
-
 
         const issues =
             await issuesResponse.json();
 
-
         if (!issuesResponse.ok) {
-
             throw new Error(
                 issues.error ||
                 'Failed to load reports'
             );
-
         }
 
-
-        renderIssues(issues);
+        allAdminIssues = Array.isArray(issues) ? issues : [];
+        updateCategoryProgressBars(allAdminIssues);
+        renderIssues(allAdminIssues);
 
 
     } catch (error) {
@@ -282,6 +296,44 @@ async function loadAdminDashboard() {
         refreshButton.textContent = '🔄 Refresh';
 
     }
+}
+
+
+// =========================
+// CATEGORY PROGRESS BARS
+// =========================
+
+function updateCategoryProgressBars(issues) {
+    if (!Array.isArray(issues) || issues.length === 0) return;
+
+    const total = issues.length;
+    const roadCount = issues.filter(i => i.category === 'ROAD_DAMAGE' || i.category === 'POTHOLE').length;
+    const lightCount = issues.filter(i => i.category === 'STREETLIGHT').length;
+    const garbageCount = issues.filter(i => i.category === 'GARBAGE').length;
+    const waterCount = issues.filter(i => i.category === 'WATER_LEAK' || i.category === 'DRAINAGE').length;
+
+    const roadPct = Math.round((roadCount / total) * 100);
+    const lightPct = Math.round((lightCount / total) * 100);
+    const garbagePct = Math.round((garbageCount / total) * 100);
+    const waterPct = Math.round((waterCount / total) * 100);
+
+    const catRoadPct = document.getElementById('catRoadPct');
+    const catRoadBar = document.getElementById('catRoadBar');
+    const catLightPct = document.getElementById('catLightPct');
+    const catLightBar = document.getElementById('catLightBar');
+    const catGarbagePct = document.getElementById('catGarbagePct');
+    const catGarbageBar = document.getElementById('catGarbageBar');
+    const catWaterPct = document.getElementById('catWaterPct');
+    const catWaterBar = document.getElementById('catWaterBar');
+
+    if (catRoadPct) catRoadPct.textContent = `${roadPct}% (${roadCount})`;
+    if (catRoadBar) catRoadBar.style.width = `${roadPct}%`;
+    if (catLightPct) catLightPct.textContent = `${lightPct}% (${lightCount})`;
+    if (catLightBar) catLightBar.style.width = `${lightPct}%`;
+    if (catGarbagePct) catGarbagePct.textContent = `${garbagePct}% (${garbageCount})`;
+    if (catGarbageBar) catGarbageBar.style.width = `${garbagePct}%`;
+    if (catWaterPct) catWaterPct.textContent = `${waterPct}% (${waterCount})`;
+    if (catWaterBar) catWaterBar.style.width = `${waterPct}%`;
 }
 
 
@@ -320,10 +372,13 @@ function renderIssues(issues) {
                         <img
                             src="${getImageUrl(issue.image_path)}"
                             alt="Issue photo"
-                            class="issue-card-image">
+                            class="issue-card-image"
+                            onerror="this.style.display='none'">
                     `
                     : '';
 
+            const isResolved = issue.status === 'RESOLVED';
+            const isInProgress = issue.status === 'IN_PROGRESS';
 
             return `
                 <article class="issue-card">
@@ -336,14 +391,14 @@ function renderIssues(issues) {
 
                             <span class="issue-category">
                                 ${escapeHtml(
-                                    issue.category
+                                    formatCategory(issue.category)
                                 )}
                             </span>
 
                             <span
-                                class="status-badge status-${issue.status}">
+                                class="status-badge status-${(issue.status || 'open').toLowerCase().replace('_', '-')}">
                                 ${formatStatus(
-                                    issue.status
+                                    issue.status || 'OPEN'
                                 )}
                             </span>
 
@@ -351,9 +406,9 @@ function renderIssues(issues) {
 
 
                         <h3 class="issue-title">
-                            ${escapeHtml(
-                                issue.title
-                            )}
+                            <a href="/issue.html?id=${issue.id}" style="color: inherit; text-decoration: none;">
+                                ${escapeHtml(issue.title)}
+                            </a>
                         </h3>
 
 
@@ -384,38 +439,37 @@ function renderIssues(issues) {
 
 
                         <p class="issue-date">
-                            👍
-                            ${issue.upvote_count || 0}
-                            Upvotes
+                            👍 ${issue.upvote_count || 0} Upvotes &bull; ⚠️ Severity: ${escapeHtml(issue.severity || 'MEDIUM')}
                         </p>
 
 
                         <p class="issue-date">
-                            ${formatDate(
-                                issue.created_at
-                            )}
+                            📅 ${formatDate(issue.created_at)}
                         </p>
+
+                        <div style="margin-top: 10px; margin-bottom: 8px;">
+                            <a href="/issue.html?id=${issue.id}" style="color: var(--primary, #0284c7); font-size: 13.5px; font-weight: 700; text-decoration: none;">
+                                🔍 View Details & Community Timeline &rarr;
+                            </a>
+                        </div>
 
 
                         <div
                             class="admin-action-buttons">
 
-
                             ${
-                                issue.status !==
-                                'IN_PROGRESS'
+                                !isInProgress
                                     ? `
                                         <button
                                             type="button"
                                             class="auth-button"
+                                            style="background: #f59e0b; border-color: #f59e0b; color: white;"
                                             onclick="updateStatus(
                                                 ${issue.id},
                                                 'IN_PROGRESS',
                                                 this
                                             )">
-
-                                            Mark In Progress
-
+                                            ⏳ Mark In Progress
                                         </button>
                                     `
                                     : ''
@@ -423,20 +477,18 @@ function renderIssues(issues) {
 
 
                             ${
-                                issue.status !==
-                                'RESOLVED'
+                                !isResolved
                                     ? `
                                         <button
                                             type="button"
                                             class="auth-button"
+                                            style="background: #16a34a; border-color: #16a34a; color: white;"
                                             onclick="updateStatus(
                                                 ${issue.id},
                                                 'RESOLVED',
                                                 this
                                             )">
-
-                                            Mark Resolved
-
+                                            ✅ Mark Resolved
                                         </button>
                                     `
                                     : ''
@@ -444,24 +496,30 @@ function renderIssues(issues) {
 
 
                             ${
-                                issue.status ===
-                                'RESOLVED'
+                                isResolved
                                     ? `
                                         <button
                                             type="button"
                                             class="auth-button"
+                                            style="background: #0284c7; border-color: #0284c7; color: white;"
                                             onclick="updateStatus(
                                                 ${issue.id},
                                                 'OPEN',
                                                 this
                                             )">
-
-                                            Reopen Issue
-
+                                            🔄 Reopen Issue
                                         </button>
                                     `
                                     : ''
                             }
+
+                            <button
+                                type="button"
+                                class="delete-button"
+                                style="padding: 9px 14px; font-size: 14px; background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; border-radius: 8px; cursor: pointer; font-weight: 600;"
+                                onclick="deleteIssueByAdmin(${issue.id}, this)">
+                                🗑️ Delete
+                            </button>
 
                         </div>
 
@@ -485,10 +543,12 @@ async function updateStatus(
 ) {
 
     const originalText =
-        button.textContent;
+        button ? button.textContent : '';
 
-    button.disabled = true;
-    button.textContent = 'Updating...';
+    if (button) {
+        button.disabled = true;
+        button.textContent = 'Updating...';
+    }
 
 
     try {
@@ -529,7 +589,7 @@ async function updateStatus(
 
 
         showMessage(
-            `Issue status changed to ${formatStatus(status)}.`,
+            `✓ Issue #${issueId} status changed to ${formatStatus(status)}.`,
             'success'
         );
 
@@ -539,8 +599,11 @@ async function updateStatus(
 
     } catch (error) {
 
-        button.disabled = false;
-        button.textContent = originalText;
+        console.error('Update status error:', error);
+        if (button) {
+            button.disabled = false;
+            button.textContent = originalText;
+        }
 
         showMessage(
             error.message ||
@@ -550,14 +613,64 @@ async function updateStatus(
 
     }
 }
+window.updateStatus = updateStatus;
+
+
+// =========================
+// DELETE ISSUE (ADMIN)
+// =========================
+
+async function deleteIssueByAdmin(issueId, button) {
+    const confirmed = confirm('Are you sure you want to permanently delete this report? This action cannot be undone.');
+    if (!confirmed) return;
+
+    const originalText = button ? button.textContent : '';
+    if (button) {
+        button.disabled = true;
+        button.textContent = 'Deleting...';
+    }
+
+    try {
+        const response = await fetch(`/api/issues/${issueId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.error || 'Failed to delete issue');
+        }
+
+        showMessage(`✓ Issue #${issueId} deleted successfully.`, 'success');
+        await loadAdminDashboard();
+    } catch (error) {
+        console.error('Delete issue error:', error);
+        if (button) {
+            button.disabled = false;
+            button.textContent = originalText;
+        }
+        showMessage(error.message || 'Failed to delete issue.', 'error');
+    }
+}
+window.deleteIssueByAdmin = deleteIssueByAdmin;
 
 
 // =========================
 // HELPERS
 // =========================
 
-function formatStatus(status) {
+function formatCategory(category) {
+    if (!category) return 'Other';
+    return category
+        .replace(/_/g, ' ')
+        .toLowerCase()
+        .replace(/\b\w/g, letter => letter.toUpperCase());
+}
 
+function formatStatus(status) {
+    if (!status) return 'Open';
     return status
         .replace('_', ' ')
         .toLowerCase()
@@ -605,3 +718,81 @@ function escapeHtml(value) {
 // =========================
 
 loadAdminDashboard();
+
+
+// =========================
+// FILTERS, SEARCH & CSV EXPORT
+// =========================
+
+function applyAdminFilters() {
+    const statusVal = document.getElementById('adminStatusFilter')?.value || '';
+    const categoryVal = document.getElementById('adminCategoryFilter')?.value || '';
+    const searchVal = (document.getElementById('adminSearchInput')?.value || '').toLowerCase().trim();
+
+    const filtered = allAdminIssues.filter(issue => {
+        const matchesStatus = !statusVal || issue.status === statusVal;
+        const matchesCategory = !categoryVal || (
+            categoryVal === 'ROAD_DAMAGE'
+                ? (issue.category === 'ROAD_DAMAGE' || issue.category === 'POTHOLE')
+                : (categoryVal === 'WATER_LEAK'
+                    ? (issue.category === 'WATER_LEAK' || issue.category === 'DRAINAGE')
+                    : issue.category === categoryVal)
+        );
+        const matchesSearch = !searchVal || (
+            (issue.title || '').toLowerCase().includes(searchVal) ||
+            (issue.category || '').toLowerCase().includes(searchVal) ||
+            (issue.address || '').toLowerCase().includes(searchVal) ||
+            (issue.reporter_name || '').toLowerCase().includes(searchVal) ||
+            (issue.status || '').toLowerCase().includes(searchVal)
+        );
+        return matchesStatus && matchesCategory && matchesSearch;
+    });
+
+    renderIssues(filtered);
+}
+
+const adminStatusFilter = document.getElementById('adminStatusFilter');
+const adminCategoryFilter = document.getElementById('adminCategoryFilter');
+if (adminStatusFilter) adminStatusFilter.addEventListener('change', applyAdminFilters);
+if (adminCategoryFilter) adminCategoryFilter.addEventListener('change', applyAdminFilters);
+
+const adminSearchInput = document.getElementById('adminSearchInput');
+if (adminSearchInput) {
+    adminSearchInput.addEventListener('input', applyAdminFilters);
+}
+
+const exportBtn = document.getElementById('exportBtn');
+if (exportBtn) {
+    exportBtn.addEventListener('click', () => {
+        if (!allAdminIssues || !allAdminIssues.length) {
+            alert('No issue data available to export.');
+            return;
+        }
+
+        const headers = ['ID', 'Title', 'Category', 'Severity', 'Status', 'Upvotes', 'Address', 'Reporter', 'Created At'];
+        const csvRows = [headers.join(',')];
+
+        allAdminIssues.forEach(issue => {
+            const row = [
+                issue.id,
+                `"${(issue.title || '').replace(/"/g, '""')}"`,
+                `"${(issue.category || '').replace(/"/g, '""')}"`,
+                issue.severity || 'MEDIUM',
+                issue.status || 'OPEN',
+                issue.upvote_count || 0,
+                `"${(issue.address || '').replace(/"/g, '""')}"`,
+                `"${(issue.reporter_name || '').replace(/"/g, '""')}"`,
+                `"${new Date(issue.created_at).toLocaleString()}"`
+            ];
+            csvRows.push(row.join(','));
+        });
+
+        const csvContent = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvRows.join('\n'));
+        const link = document.createElement('a');
+        link.setAttribute('href', csvContent);
+        link.setAttribute('download', `CivicFix_Issues_Export_${new Date().toISOString().slice(0, 10)}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    });
+}

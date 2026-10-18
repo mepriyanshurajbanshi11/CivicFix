@@ -9,394 +9,569 @@
     >
 
     <title>CivicFix Dashboard</title>
+    <meta name="description" content="CivicFix Dashboard — Track civic issues, report community hazards with live GPS watermarking, and view resolution progress.">
 
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0284c7">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <link rel="stylesheet" href="style.css">
+    <script src="theme.js"></script>
+    <script src="icons.js"></script>
 </head>
 
 <body>
+<a href="#main-content" class="skip-link">Skip to dashboard content</a>
 
-<header class="dashboard-header">
+<div class="app-shell">
 
-    <div class="header-title">
-
-        <h1>CivicFix</h1>
-
-        <span>
-            Smart Civic Issue & Road Hazard Tracker
-        </span>
-
-    </div>
-
-
-    <div class="header-actions">
-
-        <div class="lang-selector-container notranslate" translate="no">
-            <div class="lang-select-wrapper">
-                <svg class="lang-globe-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="2" y1="12" x2="22" y2="12"></line>
-                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10z"></path>
-                </svg>
-                <select class="lang-select notranslate" aria-label="Choose Language">
-                    <option value="en">English</option>
-                    <option value="hi">हिन्दी (Hindi)</option>
-                    <option value="bn">বাংলা (Bengali)</option>
-                    <option value="mr">मराठी (Marathi)</option>
-                    <option value="te">తెలుగు (Telugu)</option>
-                    <option value="ta">தமிழ் (Tamil)</option>
-                    <option value="gu">ગુજરાતી (Gujarati)</option>
-                    <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
-                    <option value="ur">اردو (Urdu)</option>
-                    <option value="kn">ಕನ್ನಡ (Kannada)</option>
-                    <option value="ml">മലയാളം (Malayalam)</option>
-                    <option value="or">ଓଡ଼ିଆ (Odia)</option>
-                </select>
-                <svg class="lang-arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="6 9 12 15 18 9"></polyline>
-                </svg>
+    <!-- DESKTOP APP SIDEBAR -->
+    <aside class="app-sidebar" aria-label="Main Navigation">
+        <div>
+            <div class="sidebar-header">
+                <div class="sidebar-logo-icon" aria-hidden="true" data-icon="landmark">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" y1="21" x2="21" y2="21"/><line x1="6" y1="18" x2="6" y2="11"/><line x1="10" y1="18" x2="10" y2="11"/><line x1="14" y1="18" x2="14" y2="11"/><line x1="18" y1="18" x2="18" y2="11"/><polygon points="12 2 20 7 4 7"/><line x1="2" y1="21" x2="22" y2="21"/></svg>
+                </div>
+                <div class="sidebar-brand-text">
+                    <h1>Civic<span>Fix</span></h1>
+                    <p>Smart Civic Issue Tracker</p>
+                </div>
             </div>
+
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="sidebar-link active">
+                    <span class="sidebar-link-icon" data-icon="dashboard"></span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="issues.html" class="sidebar-link" id="sidebarCommunityLink">
+                    <span class="sidebar-link-icon" data-icon="globe"></span>
+                    <span>Community Issues</span>
+                </a>
+                <a href="my-reports.html" class="sidebar-link" id="sidebarMyReportsLink">
+                    <span class="sidebar-link-icon" data-icon="reports"></span>
+                    <span>My Reports</span>
+                </a>
+                <a href="issues.html?view=map" class="sidebar-link">
+                    <span class="sidebar-link-icon" data-icon="map"></span>
+                    <span>City Map</span>
+                </a>
+                <a href="admin.html" class="sidebar-link" id="sidebarAdminLink" style="display: none;">
+                    <span class="sidebar-link-icon" data-icon="admin"></span>
+                    <span>Admin Panel</span>
+                </a>
+            </nav>
         </div>
 
-        <button
-            type="button"
-            id="communityButton"
-            class="header-nav-button"
-        >
-            🌐 Community Issues
-        </button>
-
-
-        <div class="profile-container">
-
-            <button
-                type="button"
-                id="profileButton"
-                class="profile-button"
-            >
-
-                <span id="profileInitial">
-                    P
-                </span>
-
+        <div class="sidebar-footer">
+            <div class="sidebar-user-card">
+                <div class="sidebar-user-avatar" id="sidebarUserAvatar">P</div>
+                <div class="sidebar-user-meta">
+                    <div class="sidebar-user-name" id="sidebarUserName">Citizen</div>
+                    <div class="sidebar-user-role" id="sidebarUserRole">CITIZEN</div>
+                </div>
+            </div>
+            <button type="button" id="sidebarLogoutBtn" class="location-button secondary btn-sidebar-logout">
+                <span data-icon="logout"></span>
+                <span>Logout</span>
             </button>
+        </div>
+    </aside>
 
+    <!-- APP MAIN CONTENT WRAPPER -->
+    <div class="app-main">
 
-            <div
-                id="profileMenu"
-                class="profile-menu"
-            >
+        <!-- MODERN TOPBAR -->
+        <header class="app-topbar">
+            <div class="topbar-search-box">
+                <span class="topbar-search-icon" data-icon="search"></span>
+                <input
+                    type="text"
+                    id="topbarSearchInput"
+                    class="topbar-search-input"
+                    placeholder="Search issues, roads, places..."
+                >
+            </div>
 
-                <div class="profile-info">
+            <div class="topbar-actions">
+                <a href="#wizardCard" class="btn-report-header" id="quickReportBtn">
+                    <span data-icon="plus"></span>
+                    <span>Report Issue</span>
+                </a>
 
-                    <strong id="profileName">
-                        Citizen
-                    </strong>
+                <button
+                    type="button"
+                    id="themeToggleBtn"
+                    class="theme-toggle-btn"
+                    title="Toggle Dark / Light Mode"
+                    aria-label="Toggle Dark / Light Mode"
+                >
+                </button>
 
-                    <small id="profileEmail">
-                        email@example.com
-                    </small>
-
-                    <span
-                        id="profileRole"
-                        class="profile-role"
-                    >
-                        CITIZEN
-                    </span>
-
+                <div class="lang-selector-container notranslate" translate="no">
+                    <div class="lang-select-wrapper">
+                        <svg class="lang-globe-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="2" y1="12" x2="22" y2="12"></line>
+                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10z"></path>
+                        </svg>
+                        <select class="lang-select notranslate" aria-label="Choose Language">
+                            <option value="en">English</option>
+                            <option value="hi">हिन्दी (Hindi)</option>
+                            <option value="bn">বাংলা (Bengali)</option>
+                            <option value="mr">मराठी (Marathi)</option>
+                            <option value="te">తెలుగు (Telugu)</option>
+                            <option value="ta">தமிழ் (Tamil)</option>
+                            <option value="gu">ગુજરાતી (Gujarati)</option>
+                            <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
+                            <option value="ur">اردو (Urdu)</option>
+                            <option value="kn">ಕನ್ನಡ (Kannada)</option>
+                            <option value="ml">മലയാളം (Malayalam)</option>
+                            <option value="or">ଓଡ଼ିଆ (Odia)</option>
+                        </select>
+                        <svg class="lang-arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </div>
                 </div>
 
+                <!-- Hidden Community Button for backward-compatible JS binding -->
+                <button type="button" id="communityButton" style="display: none;"></button>
 
-                <button
-                    type="button"
-                    id="myReportsButton"
-                >
-                    📋 My Reports
-                </button>
+                <!-- Profile Dropdown -->
+                <div class="profile-container">
+                    <button
+                        type="button"
+                        id="profileButton"
+                        class="profile-button"
+                    >
+                        <span id="profileInitial">P</span>
+                    </button>
 
-
-                <button
-                    type="button"
-                    id="editProfileButton"
-                >
-                    ✏️ Edit Profile
-                </button>
-
-
-                <button
-                    type="button"
-                    id="adminDashboardButton"
-                    style="display: none;"
-                >
-                    🛠️ Admin Dashboard
-                </button>
-
-
-                <button
-                    type="button"
-                    id="logoutButton"
-                    class="logout-button"
-                >
-                    🚪 Logout
-                </button>
-
+                    <div id="profileMenu" class="profile-menu">
+                        <div class="profile-info">
+                            <strong id="profileName">Citizen</strong>
+                            <small id="profileEmail">email@example.com</small>
+                            <span id="profileRole" class="profile-role">CITIZEN</span>
+                        </div>
+                        <button type="button" id="myReportsButton"><span data-icon="reports"></span> <span>My Reports</span></button>
+                        <button type="button" id="editProfileButton"><span data-icon="edit"></span> <span>Edit Profile</span></button>
+                        <button type="button" id="adminDashboardButton" style="display: none;"><span data-icon="admin"></span> <span>Admin Dashboard</span></button>
+                        <button type="button" id="logoutButton" class="logout-button"><span data-icon="logout"></span> <span>Logout</span></button>
+                    </div>
+                </div>
             </div>
+        </header>
 
-        </div>
+        <!-- MAIN DASHBOARD BODY -->
+        <main class="app-content" id="main-content">
 
+            <!-- WELCOME HEADER -->
+            <section class="dashboard-welcome" style="margin-bottom: 24px;">
+                <h2 style="font-size: 26px; font-weight: 800; color: var(--text);">
+                    Welcome back, <span id="welcomeName" style="color: var(--primary);">Citizen</span>
+                </h2>
+                <p style="color: var(--muted); font-size: 15px;">
+                    Track local hazards, submit geotagged reports, and help create cleaner, safer communities.
+                </p>
+            </section>
+
+            <!-- 4 COLORFUL KPI STAT CARDS -->
+            <section class="kpi-row">
+                <div class="kpi-card total">
+                    <div class="kpi-icon-box" data-icon="total"></div>
+                    <div class="kpi-data">
+                        <span class="kpi-label">Total Issues</span>
+                        <span class="kpi-value" id="statTotal">--</span>
+                    </div>
+                </div>
+
+                <div class="kpi-card open">
+                    <div class="kpi-icon-box" data-icon="warning"></div>
+                    <div class="kpi-data">
+                        <span class="kpi-label">Open Issues</span>
+                        <span class="kpi-value" id="statOpen">--</span>
+                    </div>
+                </div>
+
+                <div class="kpi-card progress">
+                    <div class="kpi-icon-box" data-icon="clock"></div>
+                    <div class="kpi-data">
+                        <span class="kpi-label">In Progress</span>
+                        <span class="kpi-value" id="statProgress">--</span>
+                    </div>
+                </div>
+
+                <div class="kpi-card resolved">
+                    <div class="kpi-icon-box" data-icon="check"></div>
+                    <div class="kpi-data">
+                        <span class="kpi-label">Resolved</span>
+                        <span class="kpi-value" id="statResolved">--</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4-STEP WIZARD STEPPER REPORT FORM -->
+            <section class="wizard-card" id="wizardCard">
+                <div style="margin-bottom: 24px;">
+                    <h2 style="font-size: 22px; font-weight: 800; color: var(--text);">Report a Civic Issue</h2>
+                    <p style="color: var(--muted); font-size: 14px;">Follow the 4 simple steps below to report a civic issue with photo and GPS evidence.</p>
+                </div>
+
+                <!-- STEPPER PROGRESS HEADER -->
+                <div class="wizard-stepper-header">
+                    <div class="stepper-progress-bar">
+                        <div class="stepper-progress-fill" id="stepperProgressFill"></div>
+                    </div>
+
+                    <div class="step-node active" id="stepNode1" data-step="1">
+                        <div class="step-circle" id="stepCircle1">1</div>
+                        <span class="step-label">1. Details</span>
+                    </div>
+
+                    <div class="step-node" id="stepNode2" data-step="2">
+                        <div class="step-circle" id="stepCircle2">2</div>
+                        <span class="step-label">2. Location</span>
+                    </div>
+
+                    <div class="step-node" id="stepNode3" data-step="3">
+                        <div class="step-circle" id="stepCircle3">3</div>
+                        <span class="step-label">3. Photo Evidence</span>
+                    </div>
+
+                    <div class="step-node" id="stepNode4" data-step="4">
+                        <div class="step-circle" id="stepCircle4">4</div>
+                        <span class="step-label">4. Review & Submit</span>
+                    </div>
+                </div>
+
+                <!-- MAIN FORM -->
+                <form id="issueForm">
+
+                    <!-- STEP 1: DETAILS -->
+                    <div class="wizard-step-pane active" id="stepPane1">
+                        <div class="form-group">
+                            <label for="category">Issue Category <span style="color: var(--danger);">*</span></label>
+                            <select id="category" name="category" required>
+                                <option value="">Select issue category</option>
+                                <option value="ROAD_DAMAGE">Road Damage</option>
+                                <option value="POTHOLE">Pothole</option>
+                                <option value="STREETLIGHT">Broken Street Light</option>
+                                <option value="GARBAGE">Garbage Pile / Sanitation</option>
+                                <option value="DRAINAGE">Drainage Overflow</option>
+                                <option value="WATER_LEAK">Water Leakage</option>
+                                <option value="OTHER">Other Hazard</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="title">Issue Title <span style="color: var(--danger);">*</span></label>
+                            <input
+                                type="text"
+                                id="title"
+                                name="title"
+                                maxlength="150"
+                                placeholder="e.g. Deep pothole near intersection / Broken streetlight on 4th Ave"
+                                required
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="description">Detailed Description</label>
+                            <textarea
+                                id="description"
+                                name="description"
+                                rows="4"
+                                placeholder="Describe the hazard size, landmarks, or how long it has been unresolved..."
+                            ></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Severity Level <span style="color: var(--danger);">*</span></label>
+                            <div class="severity-pill-container">
+                                <button type="button" class="severity-pill-btn low" data-val="LOW">
+                                    <span class="severity-dot low"></span>
+                                    <span>Low</span>
+                                </button>
+                                <button type="button" class="severity-pill-btn medium active" data-val="MEDIUM">
+                                    <span class="severity-dot medium"></span>
+                                    <span>Medium</span>
+                                </button>
+                                <button type="button" class="severity-pill-btn high" data-val="HIGH">
+                                    <span class="severity-dot high"></span>
+                                    <span>High</span>
+                                </button>
+                            </div>
+                            <!-- Underlying Select for backward-compatible JS binding -->
+                            <select id="severity" name="severity" style="display: none;" required>
+                                <option value="LOW">Low</option>
+                                <option value="MEDIUM" selected>Medium</option>
+                                <option value="HIGH">High</option>
+                            </select>
+                        </div>
+
+                        <div class="wizard-actions-bar">
+                            <div></div>
+                            <button type="button" class="wizard-btn-next" id="btnNext1">Next: Location ➔</button>
+                        </div>
+                    </div>
+
+                    <!-- STEP 2: LOCATION -->
+                    <div class="wizard-step-pane" id="stepPane2">
+                        <div class="location-section">
+                            <label for="address" style="font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                                <span data-icon="pin"></span>
+                                <span>Problem Address & Geolocation <span style="color: var(--danger);">*</span></span>
+                            </label>
+
+                            <input
+                                type="text"
+                                id="address"
+                                name="address"
+                                placeholder="Enter street address, landmark or area"
+                                required
+                            >
+
+                            <div style="display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;">
+                                <button
+                                    type="button"
+                                    id="getLocationButton"
+                                    class="location-button"
+                                    style="display: inline-flex; align-items: center; gap: 6px;"
+                                >
+                                    <span data-icon="pin"></span>
+                                    <span>Use My GPS Location</span>
+                                </button>
+
+                                <button
+                                    type="button"
+                                    id="searchLocationButton"
+                                    class="location-button secondary"
+                                    style="display: inline-flex; align-items: center; gap: 6px;"
+                                >
+                                    <span data-icon="search"></span>
+                                    <span>Find on Map</span>
+                                </button>
+                            </div>
+
+
+                            <!-- Interactive Leaflet Map for Visual Pin Placement & Dragging -->
+                            <div style="margin-top: 14px;">
+                                <div id="reportMap" style="height: 280px; width: 100%; border-radius: 12px; border: 1px solid var(--border-color); z-index: 1;"></div>
+                                <p class="map-hint" style="font-size: 12px; color: var(--muted); margin-top: 6px; display: flex; align-items: center; gap: 4px;">
+                                    <span data-icon="lightbulb"></span>
+                                    <span><b>Drag the red marker</b> or <b>click on the map</b> to adjust the exact problem pin.</span>
+                                </p>
+                            </div>
+
+                            <!-- Accuracy & Coordinates Status Badge -->
+                            <div id="accuracyBadge" style="display: none; margin-top: 10px; padding: 10px 14px; border-radius: 8px; font-size: 13px; font-weight: 500; background: rgba(2, 132, 199, 0.08); border: 1px solid rgba(2, 132, 199, 0.25); color: var(--primary);">
+                                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px;">
+                                    <span id="accuracyText" style="display: inline-flex; align-items: center; gap: 6px;"><span data-icon="crosshair"></span> <span>GPS Accuracy: Calculating...</span></span>
+                                    <span id="coordsDisplay" style="font-family: monospace; font-size: 12px; opacity: 0.85;">Lat: --, Lng: --</span>
+                                </div>
+                            </div>
+
+                            <p id="locationMessage" class="location-message" style="margin-top: 10px;">
+                                Click "Use My GPS Location" or search an address to tag coordinates on the map.
+                            </p>
+
+                            <input type="hidden" id="latitude" name="latitude">
+                            <input type="hidden" id="longitude" name="longitude">
+                        </div>
+
+                        <div class="wizard-actions-bar">
+                            <button type="button" class="wizard-btn-prev" id="btnPrev2">⬅ Back</button>
+                            <button type="button" class="wizard-btn-next" id="btnNext2">Next: Photo Evidence ➔</button>
+                        </div>
+                    </div>
+
+                    <!-- STEP 3: PHOTO EVIDENCE -->
+                    <div class="wizard-step-pane" id="stepPane3">
+                        <div class="form-group">
+                            <label style="font-weight: 700; margin-bottom: 8px; display: block;">Photo Proof</label>
+
+                            <div class="photo-dropzone-box" id="dropzoneBox">
+                                <div class="dropzone-icon" data-icon="upload"></div>
+                                <div class="dropzone-title">Drag & drop photo here or browse files</div>
+                                <div class="dropzone-subtitle">Supported formats: JPEG, PNG, WebP (Max 10 MB)</div>
+                            </div>
+
+                            <div style="display: flex; gap: 12px; margin-top: 10px; flex-wrap: wrap;">
+                                <button
+                                    type="button"
+                                    id="openCameraBtn"
+                                    class="location-button secondary"
+                                    style="width: auto; padding: 0 18px; margin: 0; display: inline-flex; align-items: center; gap: 6px;"
+                                >
+                                    <span data-icon="camera"></span>
+                                    <span>Take Live Photo</span>
+                                </button>
+
+                                <label
+                                    for="issuePhoto"
+                                    class="location-button"
+                                    style="width: auto; padding: 0 18px; margin: 0; display: inline-flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer;"
+                                >
+                                    <span data-icon="folder"></span>
+                                    <span>Browse Device Files</span>
+                                </label>
+                            </div>
+
+                            <input
+                                type="file"
+                                id="issuePhoto"
+                                name="image"
+                                accept="image/*"
+                                style="display: none;"
+                            >
+
+                            <p class="details-help" style="margin-top: 8px;">
+                                Photos are automatically stamped with real-time GPS coordinates and verification timestamp.
+                            </p>
+
+                            <div id="photoPreview" class="photo-preview"></div>
+                        </div>
+
+                        <div class="wizard-actions-bar">
+                            <button type="button" class="wizard-btn-prev" id="btnPrev3">⬅ Back</button>
+                            <button type="button" class="wizard-btn-next" id="btnNext3">Next: Review ➔</button>
+                        </div>
+                    </div>
+
+                    <!-- STEP 4: REVIEW & SUBMIT -->
+                    <div class="wizard-step-pane" id="stepPane4">
+                        <div style="margin-bottom: 20px;">
+                            <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 6px;">Review Issue Details</h3>
+                            <p style="color: var(--muted); font-size: 14px;">Confirm the accuracy of your civic issue report before submission.</p>
+                        </div>
+
+                        <div class="review-summary-card">
+                            <div class="review-item">
+                                <span class="review-label">Category:</span>
+                                <span class="review-val" id="reviewCategory">-</span>
+                            </div>
+                            <div class="review-item">
+                                <span class="review-label">Title:</span>
+                                <span class="review-val" id="reviewTitle">-</span>
+                            </div>
+                            <div class="review-item">
+                                <span class="review-label">Severity:</span>
+                                <span class="review-val" id="reviewSeverity">MEDIUM</span>
+                            </div>
+                            <div class="review-item">
+                                <span class="review-label">Location Address:</span>
+                                <span class="review-val" id="reviewAddress">-</span>
+                            </div>
+                            <div class="review-item">
+                                <span class="review-label">Coordinates:</span>
+                                <span class="review-val" id="reviewCoords">Not detected yet</span>
+                            </div>
+                            <div class="review-item">
+                                <span class="review-label">Photo Evidence:</span>
+                                <span class="review-val" id="reviewPhotoStatus">None selected</span>
+                            </div>
+                        </div>
+
+                        <div id="issueMessage" class="page-message" style="margin-top: 16px;"></div>
+
+                        <div class="wizard-actions-bar">
+                            <button type="button" class="wizard-btn-prev" id="btnPrev4">⬅ Back</button>
+                            <button type="submit" class="wizard-btn-submit" id="submitReportBtn" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
+                                <span data-icon="send"></span>
+                                <span>Submit Report</span>
+                            </button>
+                        </div>
+                    </div>
+
+                </form>
+            </section>
+
+        </main>
     </div>
 
-</header>
+</div>
+
+<!-- MOBILE BOTTOM NAVIGATION BAR -->
+<nav class="mobile-bottom-nav" aria-label="Mobile Navigation">
+    <a href="dashboard.html" class="mobile-nav-btn active">
+        <span class="mobile-nav-icon" data-icon="dashboard"></span>
+        <span>Dashboard</span>
+    </a>
+    <a href="issues.html" class="mobile-nav-btn">
+        <span class="mobile-nav-icon" data-icon="globe"></span>
+        <span>Issues</span>
+    </a>
+    <a href="issues.html?view=map" class="mobile-nav-btn">
+        <span class="mobile-nav-icon" data-icon="map"></span>
+        <span>Map</span>
+    </a>
+    <a href="my-reports.html" class="mobile-nav-btn">
+        <span class="mobile-nav-icon" data-icon="reports"></span>
+        <span>My Reports</span>
+    </a>
+</nav>
+
+<!-- MOBILE FLOATING ACTION BUTTON (FAB) -->
+<a href="#wizardCard" class="mobile-fab" title="Report New Issue" aria-label="Report New Issue" data-icon="plus">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+</a>
 
 
-<main class="container">
-
-
-    <section class="dashboard-welcome">
-
-        <h2>
-            Welcome,
-            <span id="welcomeName">
-                Citizen
-            </span>
-        </h2>
-
-        <p>
-            Report civic problems and help improve your community.
-        </p>
-
-    </section>
-
-
-    <section class="report-card">
-
-        <h2>
-            Report a Civic Issue
-        </h2>
-
-        <p class="details-help">
-            Submit a civic problem with its location and photo.
-        </p>
-
-
-        <form id="issueForm">
-
-
-            <div class="form-group">
-
-                <label for="category">
-                    Category
-                </label>
-
-                <select
-                    id="category"
-                    name="category"
-                    required
-                >
-
-                    <option value="">
-                        Select category
-                    </option>
-
-                    <option value="ROAD_DAMAGE">
-                        Road Damage
-                    </option>
-
-                    <option value="POTHOLE">
-                        Pothole
-                    </option>
-
-                    <option value="STREETLIGHT">
-                        Streetlight
-                    </option>
-
-                    <option value="GARBAGE">
-                        Garbage
-                    </option>
-
-                    <option value="DRAINAGE">
-                        Drainage
-                    </option>
-
-                    <option value="WATER_LEAK">
-                        Water Leak
-                    </option>
-
-                    <option value="OTHER">
-                        Other
-                    </option>
-
-                </select>
-
+<!-- DUPLICATE ISSUE CONFIRMATION MODAL -->
+<div id="duplicateModal" class="civic-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="dupModalTitle">
+    <div class="civic-modal-card">
+        <div class="civic-modal-header">
+            <h3 id="dupModalTitle" style="display: flex; align-items: center; gap: 8px;"><span data-icon="warning"></span> Similar Issue Reported Nearby</h3>
+            <button type="button" class="civic-modal-close" id="closeDupModalBtn" aria-label="Close">&times;</button>
+        </div>
+        <div class="civic-modal-body">
+            <p>A similar issue was found close to your current coordinates:</p>
+            <div class="duplicate-issue-preview">
+                <span class="duplicate-badge" id="dupBadge">50m away</span>
+                <h4 id="dupIssueTitle">Pothole near main road</h4>
+                <p id="dupIssueAddress" class="details-help" style="margin-top: 4px;"></p>
+                <p id="dupIssueUpvotes" style="font-weight: 600; margin-top: 8px; font-size: 13.5px; color: var(--primary);"></p>
             </div>
+            <p style="color: var(--muted); font-size: 14px;">
+                Would you like to <strong>upvote this existing report</strong> to accelerate its priority with municipal engineers, or proceed with creating a separate submission?
+            </p>
+        </div>
+        <div class="civic-modal-actions">
+            <button type="button" id="upvoteDuplicateBtn" class="auth-button" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px;"><span data-icon="upvote"></span> Upvote Existing Report</button>
+            <button type="button" id="forceSubmitBtn" class="location-button secondary" style="margin: 0; display: inline-flex; align-items: center; justify-content: center; gap: 8px;"><span data-icon="edit"></span> Proceed Anyway</button>
+            <button type="button" id="cancelDuplicateBtn" class="refresh-button">Cancel</button>
+        </div>
+    </div>
+</div>
 
 
-            <div class="form-group">
-
-                <label for="title">
-                    Issue Title
-                </label>
-
-                <input
-                    type="text"
-                    id="title"
-                    name="title"
-                    maxlength="150"
-                    placeholder="Example: Large pothole near college gate"
-                    required
-                >
-
+<!-- LIVE CAMERA EVIDENCE MODAL -->
+<div id="cameraModal" class="civic-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="camModalTitle">
+    <div class="civic-modal-card">
+        <div class="civic-modal-header">
+            <h3 id="camModalTitle" style="display: flex; align-items: center; gap: 8px;"><span data-icon="camera"></span> Live Evidence Camera</h3>
+            <button type="button" class="civic-modal-close" id="closeCameraModalBtn" aria-label="Close">&times;</button>
+        </div>
+        <div class="civic-modal-body">
+            <div class="camera-video-container">
+                <video id="cameraVideo" autoplay playsinline muted></video>
             </div>
-
-
-            <div class="form-group">
-
-                <label for="description">
-                    Description
-                </label>
-
-                <textarea
-                    id="description"
-                    name="description"
-                    rows="5"
-                    placeholder="Describe the problem..."
-                ></textarea>
-
+            <div class="camera-controls-bar">
+                <button type="button" id="switchCameraBtn" class="refresh-button" title="Switch Camera" style="display: inline-flex; align-items: center; gap: 6px;"><span data-icon="refresh"></span> Switch</button>
+                <button type="button" id="capturePhotoBtn" class="capture-btn" title="Capture Evidence" aria-label="Capture Evidence"></button>
+                <button type="button" id="cancelCameraBtn" class="refresh-button">Cancel</button>
             </div>
-
-
-            <div class="form-group">
-
-                <label for="severity">
-                    Severity
-                </label>
-
-                <select
-                    id="severity"
-                    name="severity"
-                    required
-                >
-
-                    <option value="LOW">
-                        Low
-                    </option>
-
-                    <option
-                        value="MEDIUM"
-                        selected
-                    >
-                        Medium
-                    </option>
-
-                    <option value="HIGH">
-                        High
-                    </option>
-
-                </select>
-
+            <div style="text-align: center;">
+                <span class="watermark-badge" style="display: inline-flex; align-items: center; gap: 6px;">
+                    <span data-icon="shield"></span> GPS Coordinates & Timestamp will be permanently watermarked
+                </span>
             </div>
+        </div>
+    </div>
+</div>
 
-
-            <div class="location-section">
-
-                <h3>
-                    📍 Problem Location
-                </h3>
-
-
-                <input
-                    type="text"
-                    id="address"
-                    name="address"
-                    placeholder="Enter an address or place"
-                    required
-                >
-
-
-                <button
-                    type="button"
-                    id="getLocationButton"
-                    class="location-button"
-                >
-                    📍 Use My Location
-                </button>
-
-
-                <button
-                    type="button"
-                    id="searchLocationButton"
-                    class="location-button secondary"
-                >
-                    🔎 Find Location
-                </button>
-
-
-                <p
-                    id="locationMessage"
-                    class="location-message"
-                >
-                    Your location will be detected automatically.
-                </p>
-
-
-                <input
-                    type="hidden"
-                    id="latitude"
-                    name="latitude"
-                >
-
-                <input
-                    type="hidden"
-                    id="longitude"
-                    name="longitude"
-                >
-
-            </div>
-
-
-            <div class="form-group">
-
-                <label for="issuePhoto">
-                    Add Photo
-                </label>
-
-                <input
-                    type="file"
-                    id="issuePhoto"
-                    name="image"
-                    accept="image/*"
-                >
-
-                <p class="details-help">
-                    Maximum image size: 10 MB.
-                </p>
-
-
-                <div
-                    id="photoPreview"
-                    class="photo-preview"
-                ></div>
-
-            </div>
-
-
-            <div
-                id="issueMessage"
-                class="page-message"
-            ></div>
-
-
-            <button
-                type="submit"
-                class="auth-button"
-            >
-                Report Issue
-            </button>
-
-        </form>
-
-    </section>
-
-</main>
+<canvas id="watermarkCanvas" style="display: none;"></canvas>
 
 
 <!-- EDIT PROFILE -->
@@ -461,8 +636,9 @@
 </div>
 
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script src="language.js"></script>
-<script src="dashboard.js?v=6.0"></script>
+<script src="dashboard.js?v=13.0"></script>
 
 </body>
 

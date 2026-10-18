@@ -1,14 +1,15 @@
 const token = localStorage.getItem('civic_token');
 const user = JSON.parse(localStorage.getItem('civic_user') || 'null');
 
-if (!token || !user) {
+const isPublicPage = window.location.pathname.includes('public.html') || !!document.getElementById('publicIssuesList');
+if (!isPublicPage && (!token || !user)) {
     window.location.href = '/';
 }
 
-const issuesList = document.getElementById('issuesList');
+const issuesList = document.getElementById('issuesList') || document.getElementById('publicIssuesList');
 const categoryFilter = document.getElementById('categoryFilter');
 const statusFilter = document.getElementById('statusFilter');
-const refreshButton = document.getElementById('refreshButton');
+const refreshButton = document.getElementById('refreshButton') || document.getElementById('refreshIssuesButton');
 
 const profileButton = document.getElementById('profileButton');
 const profileMenu = document.getElementById('profileMenu');
@@ -20,7 +21,7 @@ const profileRole = document.getElementById('profileRole');
 const dashboardButton = document.getElementById('dashboardButton');
 const myReportsButton = document.getElementById('myReportsButton');
 const adminDashboardButton = document.getElementById('adminDashboardButton');
-const logoutButton = document.getElementById('logoutButton');
+const logoutButton = document.getElementById('logoutButton') || document.getElementById('publicLogoutButton');
 
 const pageMessage = document.getElementById('pageMessage');
 
@@ -40,57 +41,103 @@ let markersLayer = null;
 if (user) {
     const name = user.name || 'Citizen';
 
-    profileName.textContent = name;
-    profileEmail.textContent = user.email || '';
-    profileRole.textContent = user.role || 'CITIZEN';
-    profileInitial.textContent = name.charAt(0).toUpperCase();
+    if (profileName) profileName.textContent = name;
+    if (profileEmail) profileEmail.textContent = user.email || '';
+    if (profileRole) profileRole.textContent = user.role || 'CITIZEN';
+    if (profileInitial) profileInitial.textContent = name.charAt(0).toUpperCase();
+
+    const sidebarUserName = document.getElementById('sidebarUserName');
+    const sidebarUserRole = document.getElementById('sidebarUserRole');
+    const sidebarUserAvatar = document.getElementById('sidebarUserAvatar');
+    const sidebarAdminLink = document.getElementById('sidebarAdminLink');
+    const sidebarLogoutBtn = document.getElementById('sidebarLogoutBtn');
+
+    if (sidebarUserName) sidebarUserName.textContent = name;
+    if (sidebarUserRole) sidebarUserRole.textContent = user.role || 'CITIZEN';
+    if (sidebarUserAvatar) sidebarUserAvatar.textContent = name.charAt(0).toUpperCase();
 
     if (user.role === 'ADMIN') {
-        adminDashboardButton.style.display = 'block';
+        if (adminDashboardButton) adminDashboardButton.style.display = 'block';
+        if (sidebarAdminLink) sidebarAdminLink.style.display = 'flex';
+
+        // Hide citizen "Report Issue" buttons and "My Reports" from Admins
+        document.querySelectorAll('.btn-report-header, .mobile-fab').forEach(el => el.style.display = 'none');
+        document.querySelectorAll('a[href="my-reports.html"]').forEach(el => el.style.display = 'none');
+        if (myReportsButton) myReportsButton.style.display = 'none';
+
+        // Redirect citizen dashboard links to admin overview
+        document.querySelectorAll('a[href="dashboard.html"]').forEach(el => el.setAttribute('href', 'admin.html'));
+        if (dashboardButton) {
+            dashboardButton.textContent = '🛠️ Admin Overview';
+        }
+    }
+
+    if (sidebarLogoutBtn) {
+        sidebarLogoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('civic_token');
+            localStorage.removeItem('civic_user');
+            window.location.href = '/';
+        });
     }
 }
 
-profileButton.addEventListener('click', (event) => {
-    event.stopPropagation();
-    profileMenu.classList.toggle('show');
-});
+if (profileButton) {
+    profileButton.addEventListener('click', (event) => {
+        event.stopPropagation();
+        if (profileMenu) profileMenu.classList.toggle('show');
+    });
+}
 
 document.addEventListener('click', (event) => {
-    if (!profileMenu.contains(event.target) &&
+    if (profileMenu && profileButton &&
+        !profileMenu.contains(event.target) &&
         !profileButton.contains(event.target)) {
 
         profileMenu.classList.remove('show');
     }
 });
 
-dashboardButton.addEventListener('click', () => {
-    window.location.href = '/dashboard.html';
-});
+if (dashboardButton) {
+    dashboardButton.addEventListener('click', () => {
+        window.location.href = user && user.role === 'ADMIN' ? '/admin.html' : '/dashboard.html';
+    });
+}
 
-myReportsButton.addEventListener('click', () => {
-    window.location.href = '/my-reports.html';
-});
+if (myReportsButton) {
+    myReportsButton.addEventListener('click', () => {
+        window.location.href = '/my-reports.html';
+    });
+}
 
-adminDashboardButton.addEventListener('click', () => {
-    window.location.href = '/admin.html';
-});
+if (adminDashboardButton) {
+    adminDashboardButton.addEventListener('click', () => {
+        window.location.href = '/admin.html';
+    });
+}
 
-logoutButton.addEventListener('click', () => {
-    localStorage.removeItem('civic_token');
-    localStorage.removeItem('civic_user');
+if (logoutButton) {
+    logoutButton.addEventListener('click', () => {
+        localStorage.removeItem('civic_token');
+        localStorage.removeItem('civic_user');
 
-    window.location.href = '/';
-});
+        window.location.href = '/';
+    });
+}
 
 
 // Messages
 
 function showMessage(message, type = 'success') {
+    if (!pageMessage) {
+        return;
+    }
     pageMessage.textContent = message;
     pageMessage.className = `page-message show ${type}`;
 
     setTimeout(() => {
-        pageMessage.className = 'page-message';
+        if (pageMessage) {
+            pageMessage.className = 'page-message';
+        }
     }, 3000);
 }
 
@@ -181,12 +228,22 @@ function getImageUrl(imagePath) {
 // Load issues
 
 async function loadIssues() {
+    if (!issuesList) {
+        return;
+    }
 
-    issuesList.innerHTML = `
-        <div class="community-message">
-            Loading issues...
+    issuesList.innerHTML = Array.from({ length: 6 }, () => `
+        <div class="community-issue-card skeleton-card">
+            <div class="skeleton-photo skeleton-box"></div>
+            <div class="community-issue-content">
+                <div class="skeleton-line skeleton-box" style="width: 45%; height: 14px; margin-bottom: 12px;"></div>
+                <div class="skeleton-line skeleton-box" style="width: 85%; height: 20px; margin-bottom: 10px;"></div>
+                <div class="skeleton-line skeleton-box" style="width: 100%; height: 14px; margin-bottom: 6px;"></div>
+                <div class="skeleton-line skeleton-box" style="width: 65%; height: 14px; margin-bottom: 16px;"></div>
+                <div class="skeleton-line skeleton-box" style="width: 40%; height: 14px;"></div>
+            </div>
         </div>
-    `;
+    `).join('');
 
     try {
 
@@ -222,6 +279,7 @@ async function loadIssues() {
         renderIssues(currentIssuesData);
 
         if (leafletMap) {
+            leafletMap.invalidateSize();
             updateMapMarkers(currentIssuesData);
         }
 
@@ -241,6 +299,9 @@ async function loadIssues() {
 // Render issues
 
 function renderIssues(issues) {
+    if (!issuesList) {
+        return;
+    }
 
     if (!Array.isArray(issues) || issues.length === 0) {
 
@@ -485,22 +546,28 @@ async function upvoteIssue(issueId, button) {
 
 // Filters
 
-categoryFilter.addEventListener('change', loadIssues);
-statusFilter.addEventListener('change', loadIssues);
+if (categoryFilter) {
+    categoryFilter.addEventListener('change', loadIssues);
+}
+if (statusFilter) {
+    statusFilter.addEventListener('change', loadIssues);
+}
 
 
 // Refresh
 
-refreshButton.addEventListener('click', async () => {
+if (refreshButton) {
+    refreshButton.addEventListener('click', async () => {
 
-    refreshButton.disabled = true;
-    refreshButton.textContent = '🔄 Loading...';
+        refreshButton.disabled = true;
+        refreshButton.textContent = '🔄 Loading...';
 
-    await loadIssues();
+        await loadIssues();
 
-    refreshButton.disabled = false;
-    refreshButton.textContent = '🔄 Refresh';
-});
+        refreshButton.disabled = false;
+        refreshButton.textContent = '🔄 Refresh';
+    });
+}
 
 
 // =========================
@@ -568,7 +635,7 @@ function updateMapMarkers(issues) {
     const validIssues = (issues || []).filter(issue => {
         const lat = parseFloat(issue.latitude);
         const lng = parseFloat(issue.longitude);
-        return !isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0;
+        return !isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0 && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
     });
 
     const markerBounds = [];
@@ -629,11 +696,78 @@ function updateMapMarkers(issues) {
     });
 
     if (markerBounds.length > 0 && leafletMap) {
-        leafletMap.fitBounds(L.latLngBounds(markerBounds), {
-            padding: [50, 50],
-            maxZoom: 15
-        });
+        leafletMap.invalidateSize();
+        if (markerBounds.length === 1) {
+            leafletMap.setView(markerBounds[0], 15);
+        } else {
+            leafletMap.fitBounds(L.latLngBounds(markerBounds), {
+                padding: [50, 50],
+                maxZoom: 15
+            });
+        }
     }
+}
+
+let userLocationMarker = null;
+
+function locateUserOnMap() {
+    if (!navigator.geolocation) {
+        alert('Geolocation is not supported by your browser.');
+        return;
+    }
+    const locateBtn = document.getElementById('locateUserBtn');
+    if (locateBtn) {
+        locateBtn.textContent = '📍 Locating...';
+        locateBtn.disabled = true;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+        position => {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+
+            if (!leafletMap) initMap();
+
+            if (userLocationMarker) {
+                userLocationMarker.setLatLng([lat, lng]);
+            } else {
+                const userIcon = L.divIcon({
+                    className: 'user-pulse-marker',
+                    html: `
+                        <div style="width: 22px; height: 22px; background: #0284c7; border: 3px solid white; border-radius: 50%; box-shadow: 0 0 0 6px rgba(2, 132, 199, 0.45); cursor: pointer;"></div>
+                    `,
+                    iconSize: [22, 22],
+                    iconAnchor: [11, 11]
+                });
+                userLocationMarker = L.marker([lat, lng], {
+                    icon: userIcon,
+                    title: 'Your Location'
+                }).bindPopup('<b>📍 You are here</b><br><small>Your current GPS position</small>').addTo(leafletMap);
+            }
+
+            leafletMap.flyTo([lat, lng], 14, { duration: 1.2 });
+            userLocationMarker.openPopup();
+
+            if (locateBtn) {
+                locateBtn.textContent = '📍 My Location';
+                locateBtn.disabled = false;
+            }
+        },
+        error => {
+            console.warn('Geolocation error on City Map:', error);
+            if (locateBtn) {
+                locateBtn.textContent = '📍 My Location';
+                locateBtn.disabled = false;
+            }
+            alert('Could not determine your exact location. Please verify that your device/browser location permission is enabled.');
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
+    );
+}
+
+const locateUserBtn = document.getElementById('locateUserBtn');
+if (locateUserBtn) {
+    locateUserBtn.addEventListener('click', locateUserOnMap);
 }
 
 function switchViewMode(mode) {
@@ -647,12 +781,14 @@ function switchViewMode(mode) {
 
         initMap();
 
-        setTimeout(() => {
-            if (leafletMap) {
-                leafletMap.invalidateSize();
-                updateMapMarkers(currentIssuesData);
-            }
-        }, 80);
+        [50, 150, 350, 600].forEach(delay => {
+            setTimeout(() => {
+                if (leafletMap) {
+                    leafletMap.invalidateSize();
+                    updateMapMarkers(currentIssuesData);
+                }
+            }, delay);
+        });
     } else {
         if (mapViewBtn) mapViewBtn.classList.remove('active');
         if (cardViewBtn) cardViewBtn.classList.add('active');
@@ -671,3 +807,40 @@ if (mapViewBtn) {
 
 
 loadIssues();
+
+// URL params and Topbar Search
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('view') === 'map') {
+    switchViewMode('map');
+}
+
+const topbarSearch = document.getElementById('topbarSearchInput');
+if (topbarSearch) {
+    const searchParam = urlParams.get('search');
+    if (searchParam) {
+        topbarSearch.value = searchParam;
+        setTimeout(() => {
+            const query = searchParam.toLowerCase().trim();
+            const filtered = currentIssuesData.filter(i => {
+                return (i.title || '').toLowerCase().includes(query) ||
+                       (i.category || '').toLowerCase().includes(query) ||
+                       (i.address || '').toLowerCase().includes(query);
+            });
+            if (filtered.length > 0) renderIssues(filtered);
+        }, 300);
+    }
+
+    topbarSearch.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase().trim();
+        if (!query) {
+            renderIssues(currentIssuesData);
+            return;
+        }
+        const filtered = currentIssuesData.filter(i => {
+            return (i.title || '').toLowerCase().includes(query) ||
+                   (i.category || '').toLowerCase().includes(query) ||
+                   (i.address || '').toLowerCase().includes(query);
+        });
+        renderIssues(filtered);
+    });
+}

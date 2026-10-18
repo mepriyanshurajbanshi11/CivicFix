@@ -44,6 +44,41 @@ document.getElementById('profileRole').textContent =
 document.getElementById('profileInitial').textContent =
     (user.name || 'C').charAt(0).toUpperCase();
 
+const sidebarUserName = document.getElementById('sidebarUserName');
+const sidebarUserRole = document.getElementById('sidebarUserRole');
+const sidebarUserAvatar = document.getElementById('sidebarUserAvatar');
+const sidebarAdminLink = document.getElementById('sidebarAdminLink');
+const sidebarLogoutBtn = document.getElementById('sidebarLogoutBtn');
+
+if (sidebarUserName) sidebarUserName.textContent = user.name || 'Citizen';
+if (sidebarUserRole) sidebarUserRole.textContent = user.role || 'CITIZEN';
+if (sidebarUserAvatar) sidebarUserAvatar.textContent = (user.name || 'C').charAt(0).toUpperCase();
+
+if (user.role === 'ADMIN') {
+    if (sidebarAdminLink) sidebarAdminLink.style.display = 'flex';
+
+    // Hide citizen "Report Issue" buttons and "My Reports" from Admins
+    document.querySelectorAll('.btn-report-header, .mobile-fab').forEach(el => el.style.display = 'none');
+    document.querySelectorAll('a[href="my-reports.html"]').forEach(el => el.style.display = 'none');
+    const myReportsBtn = document.getElementById('myReportsButton');
+    if (myReportsBtn) myReportsBtn.style.display = 'none';
+
+    // Change dashboard links to admin overview
+    document.querySelectorAll('a[href="dashboard.html"]').forEach(el => el.setAttribute('href', 'admin.html'));
+    const dashBtn = document.getElementById('dashboardButton');
+    if (dashBtn) {
+        dashBtn.textContent = '🛠️ Admin Overview';
+    }
+}
+
+if (sidebarLogoutBtn) {
+    sidebarLogoutBtn.addEventListener('click', () => {
+        localStorage.removeItem('civic_token');
+        localStorage.removeItem('civic_user');
+        window.location.href = '/';
+    });
+}
+
 profileButton.addEventListener('click', () => {
     profileMenu.classList.toggle('show');
 });
@@ -57,7 +92,7 @@ document
     .getElementById('dashboardButton')
     .addEventListener('click', () => {
         window.location.href =
-            '/dashboard.html';
+            user.role === 'ADMIN' ? '/admin.html' : '/dashboard.html';
     });
 
 document
@@ -217,6 +252,9 @@ async function loadIssue() {
                         issue.address ||
                         'Location not available'
                     )}
+                    ${(!isNaN(parseFloat(issue.latitude)) && !isNaN(parseFloat(issue.longitude)) && parseFloat(issue.latitude) !== 0)
+                        ? `<br><small style="color: var(--muted); font-family: monospace;">(${parseFloat(issue.latitude).toFixed(6)}, ${parseFloat(issue.longitude).toFixed(6)})</small> • <a href="https://www.google.com/maps?q=${encodeURIComponent(issue.latitude)},${encodeURIComponent(issue.longitude)}" target="_blank" rel="noopener" style="font-size: 12px; color: var(--primary);">View on Map ↗</a>`
+                        : ''}
                 </p>
 
                 <p>
@@ -293,6 +331,65 @@ async function loadIssue() {
                         : ''
                 }
 
+                ${
+                    user && user.role === 'ADMIN'
+                        ? `
+                            ${
+                                issue.status !== 'IN_PROGRESS'
+                                    ? `
+                                        <button
+                                            id="adminProgressBtn"
+                                            class="auth-button"
+                                            style="background: #f59e0b; border-color: #f59e0b; color: white;"
+                                            type="button">
+                                            ⏳ Mark In Progress
+                                        </button>
+                                    `
+                                    : ''
+                            }
+                            ${
+                                issue.status !== 'RESOLVED'
+                                    ? `
+                                        <button
+                                            id="adminResolvedBtn"
+                                            class="auth-button"
+                                            style="background: #16a34a; border-color: #16a34a; color: white;"
+                                            type="button">
+                                            ✅ Mark Resolved
+                                        </button>
+                                    `
+                                    : ''
+                            }
+                            ${
+                                issue.status === 'RESOLVED'
+                                    ? `
+                                        <button
+                                            id="adminReopenBtn"
+                                            class="auth-button"
+                                            style="background: #0284c7; border-color: #0284c7; color: white;"
+                                            type="button">
+                                            🔄 Reopen Issue
+                                        </button>
+                                    `
+                                    : ''
+                            }
+                            ${
+                                !isOwner
+                                    ? `
+                                        <button
+                                            id="adminDeleteBtn"
+                                            class="auth-button"
+                                            style="background: #fee2e2; border-color: #fca5a5; color: #dc2626;"
+                                            type="button">
+                                            🗑️ Delete
+                                        </button>
+                                    `
+                                    : ''
+                            }
+                        `
+                        : ''
+                }
+
             </div>
         `;
 
@@ -333,6 +430,26 @@ async function loadIssue() {
                     'click',
                     deleteIssue
                 );
+        }
+
+        if (user && user.role === 'ADMIN') {
+            const adminProgressBtn = document.getElementById('adminProgressBtn');
+            const adminResolvedBtn = document.getElementById('adminResolvedBtn');
+            const adminReopenBtn = document.getElementById('adminReopenBtn');
+            const adminDeleteBtn = document.getElementById('adminDeleteBtn');
+
+            if (adminProgressBtn) {
+                adminProgressBtn.addEventListener('click', () => adminChangeStatus('IN_PROGRESS', adminProgressBtn));
+            }
+            if (adminResolvedBtn) {
+                adminResolvedBtn.addEventListener('click', () => adminChangeStatus('RESOLVED', adminResolvedBtn));
+            }
+            if (adminReopenBtn) {
+                adminReopenBtn.addEventListener('click', () => adminChangeStatus('OPEN', adminReopenBtn));
+            }
+            if (adminDeleteBtn) {
+                adminDeleteBtn.addEventListener('click', adminDeleteIssue);
+            }
         }
 
     } catch (error) {
@@ -1025,6 +1142,71 @@ async function deleteIssue() {
             'Unable to delete issue.',
             'error'
         );
+    }
+}
+
+
+// =========================
+// ADMIN STATUS & DELETE
+// =========================
+
+async function adminChangeStatus(status, button) {
+    const originalText = button ? button.textContent : '';
+    if (button) {
+        button.disabled = true;
+        button.textContent = 'Updating...';
+    }
+
+    try {
+        const response = await fetch(`/api/admin/issues/${issueId}/status`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ status })
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.error || 'Failed to update status');
+        }
+
+        const label = status.replace('_', ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
+        showIssueMessage(`✓ Status changed to ${label}.`, 'success');
+        await loadIssue();
+    } catch (error) {
+        console.error('Admin status change error:', error);
+        if (button) {
+            button.disabled = false;
+            button.textContent = originalText;
+        }
+        showIssueMessage(error.message || 'Unable to update status.', 'error');
+    }
+}
+
+async function adminDeleteIssue() {
+    if (!confirm('Are you sure you want to permanently delete this report as Administrator?')) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/issues/${issueId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.error || 'Failed to delete issue');
+        }
+
+        alert('Issue deleted successfully.');
+        window.location.href = '/admin.html';
+    } catch (error) {
+        showIssueMessage(error.message || 'Failed to delete issue.', 'error');
     }
 }
 

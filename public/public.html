@@ -8,29 +8,32 @@
     >
 
     <title>CivicFix - Public Issues</title>
+    <meta name="description" content="CivicFix Public Issues Feed — View community civic reports, road hazards, and neighborhood problems.">
 
-    <link
-        rel="stylesheet"
-        href="style.css"
-    >
+    <link rel="stylesheet" href="style.css">
+    <script src="theme.js"></script>
+    <script src="icons.js"></script>
 </head>
 
 <body>
+<a href="#main-content" class="skip-link">Skip to public feed</a>
 
 <header class="dashboard-header">
 
     <div class="header-title">
-
-        <h1>CivicFix</h1>
-
-        <span>
-            Public Civic Issues
-        </span>
-
+        <h1>Civic<span>Fix</span></h1>
+        <span>Public Civic Issues</span>
     </div>
 
-
     <div class="public-nav">
+        <button
+            type="button"
+            id="themeToggleBtn"
+            class="theme-toggle-btn"
+            title="Toggle Dark / Light Mode"
+            aria-label="Toggle Dark / Light Mode"
+        >
+        </button>
 
         <div class="lang-selector-container notranslate" translate="no">
             <div class="lang-select-wrapper">
@@ -86,7 +89,7 @@
 </header>
 
 
-<main class="container">
+<main class="container" id="main-content">
 
     <section class="public-hero">
 

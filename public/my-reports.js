@@ -11,6 +11,10 @@ if (!token) {
     window.location.href = '/';
 }
 
+if (user && user.role === 'ADMIN') {
+    window.location.href = '/admin.html';
+}
+
 
 // =========================
 // PROFILE
@@ -58,6 +62,28 @@ if (profileInitial) {
         (user.name || 'C')
             .charAt(0)
             .toUpperCase();
+}
+
+const sidebarUserName = document.getElementById('sidebarUserName');
+const sidebarUserRole = document.getElementById('sidebarUserRole');
+const sidebarUserAvatar = document.getElementById('sidebarUserAvatar');
+const sidebarAdminLink = document.getElementById('sidebarAdminLink');
+const sidebarLogoutBtn = document.getElementById('sidebarLogoutBtn');
+
+if (sidebarUserName) sidebarUserName.textContent = user.name || 'Citizen';
+if (sidebarUserRole) sidebarUserRole.textContent = user.role || 'CITIZEN';
+if (sidebarUserAvatar) sidebarUserAvatar.textContent = (user.name || 'C').charAt(0).toUpperCase();
+
+if (user.role === 'ADMIN' && sidebarAdminLink) {
+    sidebarAdminLink.style.display = 'flex';
+}
+
+if (sidebarLogoutBtn) {
+    sidebarLogoutBtn.addEventListener('click', () => {
+        localStorage.removeItem('civic_token');
+        localStorage.removeItem('civic_user');
+        window.location.href = '/';
+    });
 }
 
 
@@ -231,11 +257,17 @@ async function loadMyReports() {
         );
 
 
-    container.innerHTML = `
-        <p class="loading-message">
-            Loading your reports...
-        </p>
-    `;
+    container.innerHTML = Array.from({ length: 3 }, () => `
+        <div class="community-issue-card skeleton-card" style="margin-bottom: 16px;">
+            <div class="skeleton-photo skeleton-box" style="height: 180px;"></div>
+            <div class="community-issue-content">
+                <div class="skeleton-line skeleton-box" style="width: 45%; height: 14px; margin-bottom: 12px;"></div>
+                <div class="skeleton-line skeleton-box" style="width: 80%; height: 20px; margin-bottom: 10px;"></div>
+                <div class="skeleton-line skeleton-box" style="width: 95%; height: 14px; margin-bottom: 16px;"></div>
+                <div class="skeleton-line skeleton-box" style="width: 40%; height: 14px;"></div>
+            </div>
+        </div>
+    `).join('');
 
 
     try {

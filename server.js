@@ -8,12 +8,29 @@ const path = require('path');
 const fs = require('fs');
 const nodemailer = require('nodemailer');
 const multer = require('multer');
+const crypto = require('crypto');
+const rateLimit = require('express-rate-limit');
 
 const db = require('./db');
 
 const app = express();
 const PORT = 3000;
 const JWT_SECRET = process.env.JWT_SECRET;
+
+if (!JWT_SECRET) {
+    console.error('FATAL: JWT_SECRET environment variable is missing.');
+    process.exit(1);
+}
+
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 10,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+        error: 'Too many requests, please try again later.'
+    }
+});
 
 
 // =========================
@@ -95,16 +112,22 @@ const upload =
         fileFilter:
             (req, file, cb) => {
 
-                if (
-                    file.mimetype.startsWith(
-                        'image/'
-                    )
-                ) {
+                const allowedExtensions = ['.jpg', '.jpeg', '.png', '.webp'];
+                const allowedMimetypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+
+                const ext = path.extname(file.originalname).toLowerCase();
+                const mime = (file.mimetype || '').toLowerCase();
+
+                if (ext === '.svg' || mime.includes('svg')) {
+                    return cb(new Error('SVG files are not allowed'));
+                }
+
+                if (allowedExtensions.includes(ext) && allowedMimetypes.includes(mime)) {
                     cb(null, true);
                 } else {
                     cb(
                         new Error(
-                            'Only image files are allowed'
+                            'Only image files (.jpg, .jpeg, .png, .webp) are allowed'
                         )
                     );
                 }
@@ -140,10 +163,7 @@ const transporter =
 
 function generateOTP() {
 
-    return Math.floor(
-        100000 +
-        Math.random() * 900000
-    ).toString();
+    return crypto.randomInt(100000, 1000000).toString();
 
 }
 
@@ -324,10 +344,6 @@ app.post(
                         const userId =
                             results[0].id;
 
-                        const userName =
-                            results[0].name ||
-                            name;
-
                         const otp =
                             generateOTP();
 
@@ -337,36 +353,67 @@ app.post(
                                 10 * 60 * 1000
                             );
 
+                        const hashedPassword =
+                            await bcrypt.hash(
+                                password,
+                                10
+                            );
+
                         db.query(
-                            `UPDATE
-                                email_verifications
+                            `UPDATE users
                              SET
-                                otp = ?,
-                                expires_at = ?,
-                                verified = FALSE
-                             WHERE
-                                user_id = ?`,
+                                name = ?,
+                                password = ?
+                             WHERE id = ?`,
                             [
-                                otp,
-                                expiresAt,
+                                name,
+                                hashedPassword,
                                 userId
                             ],
-                            async updateErr => {
+                            (userUpdateErr) => {
 
-                                if (updateErr) {
+                                if (userUpdateErr) {
 
                                     return res.status(500).json({
                                         error:
-                                            'Failed to create OTP'
+                                            'Failed to update user details'
                                     });
 
                                 }
 
-                                await sendOTPEmail(
-                                    email,
-                                    userName,
-                                    otp,
-                                    res
+                                db.query(
+                                    `UPDATE
+                                        email_verifications
+                                     SET
+                                        otp = ?,
+                                        expires_at = ?,
+                                        verified = FALSE
+                                     WHERE
+                                        user_id = ?`,
+                                    [
+                                        otp,
+                                        expiresAt,
+                                        userId
+                                    ],
+                                    async updateErr => {
+
+                                        if (updateErr) {
+
+                                            return res.status(500).json({
+                                                error:
+                                                    'Failed to create OTP'
+                                            });
+
+                                        }
+
+                                        await sendOTPEmail(
+                                            email,
+                                            name,
+                                            otp,
+                                            res
+                                        );
+
+                                    }
                                 );
 
                             }
@@ -571,6 +618,7 @@ CivicFix`
 
 app.post(
     '/api/verify-email',
+    authLimiter,
     (req, res) => {
 
         const {
@@ -605,6 +653,7 @@ app.post(
                    email_verifications.user_id
              WHERE users.email = ?
              AND email_verifications.verified = FALSE
+             AND email_verifications.otp NOT LIKE 'RESET:%'
              ORDER BY email_verifications.id DESC
              LIMIT 1`,
             [email],
@@ -724,6 +773,7 @@ app.post(
 
 app.post(
     '/api/forgot-password',
+    authLimiter,
     (req, res) => {
 
         const {
@@ -879,6 +929,7 @@ CivicFix`
 
 app.post(
     '/api/reset-password',
+    authLimiter,
     async (req, res) => {
 
         const {
@@ -1076,6 +1127,7 @@ app.post(
 
 app.post(
     '/api/login',
+    authLimiter,
     (req, res) => {
 
         const {
@@ -1238,43 +1290,69 @@ app.get(
         const numLat = parseFloat(lat);
         const numLon = parseFloat(lon);
 
-        const BMSIT_INFO = {
-            address: 'BMS Institute of Technology and Management, Doddaballapur Main Road, Avalahalli, Yelahanka, Bengaluru, Karnataka, 560064',
-            latitude: 13.1337434,
-            longitude: 77.5681741
+        if (isNaN(numLat) || isNaN(numLon) || numLat < -90 || numLat > 90 || numLon < -180 || numLon > 180) {
+            return res.status(400).json({
+                error: 'Invalid latitude or longitude coordinates'
+            });
+        }
+
+        console.log(`[ReverseGeocode] Received coordinates from client: lat=${numLat}, lon=${numLon}`);
+
+        // Proximity detection for specific landmarks in Avalahalli / BMSIT area (560064) if user is right there
+        // 1. Elite PG (Avalahalli student cluster at ~13.1356, 77.5723)
+        const distToElitePG = Math.hypot(numLat - 13.1357, numLon - 77.5724);
+        if (distToElitePG <= 0.0015) { // ~160m radius
+            console.log(`[ReverseGeocode] Landmark detected: Elite PG (lat=${numLat}, lon=${numLon})`);
+            return res.json({
+                address: 'Elite PG, Avalahalli, Yelahanka, Bengaluru, Karnataka, 560064',
+                latitude: numLat,
+                longitude: numLon,
+                landmark: 'Elite PG'
+            });
+        }
+
+        // 2. Kumardhara Hostel / PG (BMSIT hostel area at ~13.1345, 77.5702)
+        const distToKumardhara = Math.hypot(numLat - 13.1345, numLon - 77.5702);
+        if (distToKumardhara <= 0.0012) { // ~130m radius
+            console.log(`[ReverseGeocode] Landmark detected: Kumardhara PG / Hostel (lat=${numLat}, lon=${numLon})`);
+            return res.json({
+                address: 'Kumardhara Hostel / PG, Avalahalli, Yelahanka, Bengaluru, Karnataka, 560064',
+                latitude: numLat,
+                longitude: numLon,
+                landmark: 'Kumardhara PG / Hostel'
+            });
+        }
+
+        // 3. BMS Institute of Technology & Management Campus (at ~13.1337434, 77.5681741)
+        const distToBMSIT = Math.hypot(numLat - 13.1337434, numLon - 77.5681741);
+        if (distToBMSIT <= 0.0025) { // ~280m radius covers campus
+            console.log(`[ReverseGeocode] Landmark detected: BMSIT Campus (lat=${numLat}, lon=${numLon})`);
+            return res.json({
+                address: 'BMS Institute of Technology and Management, Doddaballapur Main Road, Avalahalli, Yelahanka, Bengaluru, Karnataka, 560064',
+                latitude: numLat,
+                longitude: numLon,
+                landmark: 'BMS Institute of Technology'
+            });
+        }
+
+        const sanitizeAddress = (addr) => {
+            if (!addr) return addr;
+            let res = addr;
+            if (res.includes('Raja Kempegowda Ward')) {
+                res = res.replace(/Raja\s*Kempegowda\s*Ward,?\s*/gi, 'Avalahalli, Yelahanka, ');
+            }
+            return res;
         };
 
-        const distFromBmsit = Math.hypot(numLat - BMSIT_INFO.latitude, numLon - BMSIT_INFO.longitude);
-
-        // Check if browser Wi-Fi router is reporting Dadri / UP / North India (lat ~28.5, lon ~77.5)
-        // Auto-correct to user's actual Bengaluru BMSIT location
-        if (numLat >= 24 && numLat <= 32 && numLon >= 75 && numLon <= 85) {
-            console.log(`[Reverse Geocode] Auto-correcting UP/Dadri router cache (${lat}, ${lon}) to BMSIT Bengaluru.`);
-            return res.json({
-                address: BMSIT_INFO.address,
-                latitude: BMSIT_INFO.latitude,
-                longitude: BMSIT_INFO.longitude,
-                corrected: true
-            });
-        }
-
-        // Direct proximity match for BMSIT campus (~850m radius)
-        if (distFromBmsit <= 0.0078) {
-            return res.json({
-                address: BMSIT_INFO.address,
-                latitude: numLat,
-                longitude: numLon
-            });
-        }
-
-        // 1. Try Nominatim first (detailed OpenStreetMap address precision)
+        // 1. Try Nominatim (OpenStreetMap)
         try {
             const nomRes = await fetch(
-                `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}`,
+                `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(numLat)}&lon=${encodeURIComponent(numLon)}&zoom=18&addressdetails=1`,
                 {
                     headers: {
                         'User-Agent': 'CivicFixApp/1.0 (contact@civicfix.local)'
-                    }
+                    },
+                    signal: AbortSignal.timeout(8000)
                 }
             );
 
@@ -1282,73 +1360,48 @@ app.get(
                 const data = await nomRes.json();
                 if (data && data.address) {
                     const a = data.address;
-                    let place = a.amenity || a.building || a.leisure || a.tourism || a.office || '';
+                    const place = a.amenity || a.building || a.leisure || a.tourism || a.office || a.shop || '';
                     const road = a.road || a.pedestrian || a.street || '';
-
-                    // Filter out "Dr. Shivaram Karanth Layout", prioritize true locality
-                    let locality = '';
-                    if (a.suburb && !/shivaram\s*karanth/i.test(a.suburb)) {
-                        locality = a.suburb;
-                    } else {
-                        locality = a.village || a.city_district || a.neighbourhood || '';
-                    }
-                    if (!locality) {
-                        locality = a.village || a.city_district || 'Avalahalli';
-                    }
-
-                    const city = a.city || a.town || (a.county && !/taluk/i.test(a.county) ? a.county : '') || 'Bengaluru';
-                    const state = a.state || 'Karnataka';
+                    const locality = a.suburb || a.neighbourhood || a.village || a.city_district || '';
+                    const city = a.city || a.town || a.county || '';
+                    const state = a.state || '';
                     const postcode = a.postcode || '';
-
-                    // If within Avalahalli / 560064 near BMSIT
-                    if (distFromBmsit <= 0.015 || postcode === '560064' || /avalahalli/i.test(locality)) {
-                        if (!place || /karanth/i.test(place)) {
-                            place = 'BMS Institute of Technology and Management';
-                        }
-                    }
 
                     const parts = [place, road, locality, city, state, postcode].filter(Boolean);
                     if (parts.length >= 2) {
+                        const address = sanitizeAddress(parts.join(', '));
+                        console.log(`[ReverseGeocode] Nominatim resolved: ${address}`);
                         return res.json({
-                            address: parts.join(', ')
+                            address,
+                            latitude: numLat,
+                            longitude: numLon
                         });
                     }
                 }
 
                 if (data && data.display_name) {
-                    let dName = data.display_name;
-                    if (dName.includes('Uttar Pradesh') || dName.includes('Dadri')) {
-                        return res.json({
-                            address: BMSIT_INFO.address,
-                            latitude: BMSIT_INFO.latitude,
-                            longitude: BMSIT_INFO.longitude,
-                            corrected: true
-                        });
-                    }
-                    if (/shivaram\s*karanth/i.test(dName) || distFromBmsit <= 0.015) {
-                        return res.json({
-                            address: BMSIT_INFO.address,
-                            latitude: numLat,
-                            longitude: numLon
-                        });
-                    }
+                    const address = sanitizeAddress(data.display_name);
+                    console.log(`[ReverseGeocode] Nominatim display_name: ${address}`);
                     return res.json({
-                        address: dName
+                        address,
+                        latitude: numLat,
+                        longitude: numLon
                     });
                 }
             }
         } catch (nomErr) {
-            console.warn('Nominatim proxy failed:', nomErr.message);
+            console.warn('[ReverseGeocode] Nominatim proxy error:', nomErr.message);
         }
 
         // 2. Try Photon fallback
         try {
             const photonRes = await fetch(
-                `https://photon.komoot.io/reverse?lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}&limit=1`,
+                `https://photon.komoot.io/reverse?lat=${encodeURIComponent(numLat)}&lon=${encodeURIComponent(numLon)}&limit=1`,
                 {
                     headers: {
                         'Accept': 'application/json'
-                    }
+                    },
+                    signal: AbortSignal.timeout(8000)
                 }
             );
 
@@ -1356,24 +1409,12 @@ app.get(
                 const data = await photonRes.json();
                 if (data.features && data.features.length > 0) {
                     const props = data.features[0].properties;
-                    if (distFromBmsit <= 0.015) {
-                        return res.json({
-                            address: BMSIT_INFO.address,
-                            latitude: numLat,
-                            longitude: numLon
-                        });
-                    }
 
                     const parts = [
                         props.name,
                         props.street,
-                        props.locality,
-                        props.suburb && !/shivaram\s*karanth/i.test(props.suburb) ? props.suburb : '',
-                        props.neighbourhood,
-                        props.city,
-                        props.town,
-                        props.village,
-                        props.district,
+                        props.locality || props.suburb || props.district,
+                        props.city || props.town || props.village,
                         props.state,
                         props.country,
                         props.postcode
@@ -1383,32 +1424,29 @@ app.get(
                     );
 
                     if (parts.length > 0) {
+                        const address = sanitizeAddress(parts.join(', '));
+                        console.log(`[ReverseGeocode] Photon resolved: ${address}`);
                         return res.json({
-                            address: parts.join(', ')
+                            address,
+                            latitude: numLat,
+                            longitude: numLon
                         });
                     }
                 }
             }
         } catch (photonErr) {
-            console.warn('Photon proxy failed:', photonErr.message);
+            console.warn('[ReverseGeocode] Photon proxy error:', photonErr.message);
         }
 
         // 3. Try BigDataCloud fallback
         try {
             const bdcRes = await fetch(
-                `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${encodeURIComponent(lat)}&longitude=${encodeURIComponent(lon)}&localityLanguage=en`
+                `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${encodeURIComponent(numLat)}&longitude=${encodeURIComponent(numLon)}&localityLanguage=en`,
+                { signal: AbortSignal.timeout(8000) }
             );
 
             if (bdcRes.ok) {
                 const data = await bdcRes.json();
-                if (distFromBmsit <= 0.015) {
-                    return res.json({
-                        address: BMSIT_INFO.address,
-                        latitude: numLat,
-                        longitude: numLon
-                    });
-                }
-
                 const parts = [
                     data.locality,
                     data.city,
@@ -1417,17 +1455,23 @@ app.get(
                 ].filter(Boolean);
 
                 if (parts.length > 0) {
+                    const address = sanitizeAddress(parts.join(', '));
+                    console.log(`[ReverseGeocode] BigDataCloud resolved: ${address}`);
                     return res.json({
-                        address: parts.join(', ')
+                        address,
+                        latitude: numLat,
+                        longitude: numLon
                     });
                 }
             }
         } catch (bdcErr) {
-            console.warn('BigDataCloud proxy failed:', bdcErr.message);
+            console.warn('[ReverseGeocode] BigDataCloud proxy error:', bdcErr.message);
         }
 
         return res.status(404).json({
-            error: 'Address not found'
+            error: 'Could not resolve address for these coordinates',
+            latitude: numLat,
+            longitude: numLon
         });
     }
 );
@@ -1488,6 +1532,23 @@ app.get(
 
         const raw = String(q).trim();
         const parts = raw.split(/[,;\n]+/).map(p => p.trim()).filter(Boolean);
+
+        if (/elite\s*pg/i.test(raw)) {
+            return res.json({
+                longitude: 77.572416,
+                latitude: 13.135804,
+                address: raw,
+                matchedAddress: 'Elite PG, Avalahalli, Yelahanka, Bengaluru, Karnataka, 560064'
+            });
+        }
+        if (/kumardhara/i.test(raw)) {
+            return res.json({
+                longitude: 77.570200,
+                latitude: 13.134500,
+                address: raw,
+                matchedAddress: 'Kumardhara Hostel / PG, Avalahalli, Yelahanka, Bengaluru, Karnataka, 560064'
+            });
+        }
 
         // Generate smart progressive candidate queries
         const candidates = [raw];
@@ -1600,37 +1661,52 @@ app.post(
         } = req.body;
 
 
-        const lat =
-            parseFloat(latitude);
+        const lat = parseFloat(latitude);
+        const lon = parseFloat(longitude);
 
-        const lon =
-            parseFloat(longitude);
-
-
-        if (
-            !category ||
-            !title ||
-            isNaN(lat) ||
-            isNaN(lon) ||
-            !address
-        ) {
-
+        if (!category || !title || !address || !String(address).trim()) {
             if (req.file) {
-
                 fs.unlink(
                     req.file.path,
                     () => {}
                 );
-
             }
 
+            return res.status(400).json({
+                error: 'Required issue information (category, title, address) is missing'
+            });
+        }
+
+        if (
+            latitude === undefined ||
+            latitude === null ||
+            latitude === '' ||
+            longitude === undefined ||
+            longitude === null ||
+            longitude === '' ||
+            isNaN(lat) ||
+            isNaN(lon) ||
+            !isFinite(lat) ||
+            !isFinite(lon) ||
+            lat < -90 ||
+            lat > 90 ||
+            lon < -180 ||
+            lon > 180 ||
+            (lat === 0 && lon === 0)
+        ) {
+            if (req.file) {
+                fs.unlink(
+                    req.file.path,
+                    () => {}
+                );
+            }
 
             return res.status(400).json({
-                error:
-                    'Required issue information is missing'
+                error: 'Valid numeric latitude (-90 to 90) and longitude (-180 to 180) coordinates are required'
             });
-
         }
+
+        const safeAddress = String(address).trim().substring(0, 500);
 
 
         db.query(
@@ -1663,66 +1739,106 @@ app.post(
                 }
 
 
-                for (
-                    const issue
-                    of existingIssues
-                ) {
+                const forceSubmit = req.body.force === 'true' || req.body.force === true;
 
-                    const distance =
-                        getDistanceMeters(
-                            lat,
-                            lon,
-                            parseFloat(
-                                issue.latitude
-                            ),
-                            parseFloat(
-                                issue.longitude
-                            )
-                        );
-
-
-                    if (
-                        distance <= 50
+                if (!forceSubmit) {
+                    for (
+                        const issue
+                        of existingIssues
                     ) {
 
-                        if (req.file) {
-
-                            fs.unlink(
-                                req.file.path,
-                                () => {}
+                        const distance =
+                            getDistanceMeters(
+                                lat,
+                                lon,
+                                parseFloat(
+                                    issue.latitude
+                                ),
+                                parseFloat(
+                                    issue.longitude
+                                )
                             );
+
+
+                        if (
+                            distance <= 50
+                        ) {
+
+                            if (req.file) {
+
+                                fs.unlink(
+                                    req.file.path,
+                                    () => {}
+                                );
+
+                            }
+
+                            db.query(
+                                `INSERT INTO issue_upvotes
+                                (
+                                    issue_id,
+                                    user_id
+                                )
+                                VALUES (?, ?)`,
+                                [
+                                    issue.id,
+                                    req.user.id
+                                ],
+                                (upvoteErr) => {
+
+                                    if (upvoteErr) {
+
+                                        if (
+                                            upvoteErr.code ===
+                                            'ER_DUP_ENTRY'
+                                        ) {
+
+                                            return res.json({
+                                                merged:
+                                                    true,
+                                                message:
+                                                    `A nearby ${category} was already reported (${Math.round(distance)}m away). You have already upvoted this issue.`,
+                                                issueId:
+                                                    issue.id
+                                            });
+
+                                        }
+
+                                        return res.status(500).json({
+                                            error:
+                                                'Failed to record upvote'
+                                        });
+
+                                    }
+
+                                    db.query(
+                                        `UPDATE issues
+                                         SET upvote_count =
+                                             upvote_count + 1
+                                         WHERE id = ?`,
+                                        [issue.id],
+                                        () => {
+
+                                            return res.json({
+                                                merged:
+                                                    true,
+                                                message:
+                                                    `A nearby ${category} was already reported (${Math.round(distance)}m away). Your report was added as an upvote.`,
+                                                issueId:
+                                                    issue.id
+                                            });
+
+                                        }
+                                    );
+
+                                }
+                            );
+
+                            return;
 
                         }
 
-
-                        db.query(
-                            `UPDATE issues
-                             SET upvote_count =
-                                 upvote_count + 1
-                             WHERE id = ?`,
-                            [issue.id],
-                            () => {
-
-                                return res.json({
-
-                                    merged:
-                                        true,
-
-                                    message:
-                                        `A nearby ${category} was already reported (${Math.round(distance)}m away). Your report was added as an upvote.`,
-
-                                    issueId:
-                                        issue.id
-
-                                });
-
-                            }
-                        );
-
-                        return;
-
                     }
-
                 }
 
 
@@ -1748,7 +1864,7 @@ app.post(
                         severity || 'MEDIUM',
                         lat,
                         lon,
-                        address
+                        safeAddress
                     ],
                     (
                         insertErr,
@@ -3141,9 +3257,21 @@ app.use(
 
         if (err) {
 
-            return res.status(400).json({
+            console.error('Unhandled error:', err);
+
+            if (err.message && (err.message.includes('allowed') || err.message.includes('SVG'))) {
+                return res.status(400).json({
+                    error: err.message
+                });
+            }
+
+            const statusCode = err.status || err.statusCode || 500;
+
+            return res.status(statusCode).json({
                 error:
-                    err.message
+                    statusCode < 500
+                        ? err.message
+                        : 'Internal server error'
             });
 
         }

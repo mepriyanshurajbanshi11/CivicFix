@@ -6,212 +6,307 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Admin Dashboard - CivicFix</title>
+    <meta name="description" content="CivicFix Admin Dashboard — Municipal triage, KPI metrics, issue assignment, and resolution analytics.">
+
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0284c7">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
 
     <link rel="stylesheet" href="style.css">
+    <script src="theme.js"></script>
+    <script src="icons.js"></script>
 </head>
 
 <body>
+<a href="#main-content" class="skip-link">Skip to admin workspace</a>
 
-<header class="dashboard-header">
+<div class="app-shell">
 
-    <div class="header-title">
-        <h1>CivicFix</h1>
-        <span>Smart Civic Issue & Road Hazard Tracker</span>
-    </div>
-
-    <div class="header-actions">
-        <div class="lang-selector-container notranslate" translate="no">
-            <div class="lang-select-wrapper">
-                <svg class="lang-globe-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="2" y1="12" x2="22" y2="12"></line>
-                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10z"></path>
-                </svg>
-                <select class="lang-select notranslate" aria-label="Choose Language">
-                    <option value="en">English</option>
-                    <option value="hi">हिन्दी (Hindi)</option>
-                    <option value="bn">বাংলা (Bengali)</option>
-                    <option value="mr">मराठी (Marathi)</option>
-                    <option value="te">తెలుగు (Telugu)</option>
-                    <option value="ta">தமிழ் (Tamil)</option>
-                    <option value="gu">ગુજરાતી (Gujarati)</option>
-                    <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
-                    <option value="ur">اردو (Urdu)</option>
-                    <option value="kn">ಕನ್ನಡ (Kannada)</option>
-                    <option value="ml">മലയാളം (Malayalam)</option>
-                    <option value="or">ଓଡ଼ିଆ (Odia)</option>
-                </select>
-                <svg class="lang-arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="6 9 12 15 18 9"></polyline>
-                </svg>
-            </div>
-        </div>
-
-        <div class="profile-container">
-
-        <button
-            type="button"
-            id="profileButton"
-            class="profile-button">
-
-            <span id="profileInitial">A</span>
-
-        </button>
-
-        <div
-            id="profileMenu"
-            class="profile-menu">
-
-            <div class="profile-info">
-
-                <strong id="profileName">
-                    Admin
-                </strong>
-
-                <small id="profileEmail">
-                    admin@example.com
-                </small>
-
-                <span
-                    id="profileRole"
-                    class="profile-role">
-                    ADMIN
-                </span>
-
+    <!-- DESKTOP APP SIDEBAR -->
+    <aside class="app-sidebar" aria-label="Admin Navigation">
+        <div>
+            <div class="sidebar-header">
+                <div class="sidebar-logo-icon" aria-hidden="true" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                </div>
+                <div class="sidebar-brand-text">
+                    <h1>Civic<span style="color: #3b82f6;">Fix</span></h1>
+                    <p>Municipal Control Center</p>
+                </div>
             </div>
 
-            <button
-                type="button"
-                id="dashboardButton">
-                🏠 Dashboard
-            </button>
-
-            <button
-                type="button"
-                id="communityButton">
-                🌐 Community Issues
-            </button>
-
-            <button
-                type="button"
-                id="myReportsButton">
-                📋 My Reports
-            </button>
-
-            <button
-                type="button"
-                id="logoutButton"
-                class="logout-button">
-                🚪 Logout
-            </button>
-
+            <nav class="sidebar-nav">
+                <a href="admin.html" class="sidebar-link active">
+                    <span class="sidebar-link-icon" data-icon="admin"></span>
+                    <span>Admin Overview</span>
+                </a>
+                <a href="issues.html" class="sidebar-link" id="sidebarCommunityLink">
+                    <span class="sidebar-link-icon" data-icon="globe"></span>
+                    <span>Community Issues</span>
+                </a>
+                <a href="issues.html?view=map" class="sidebar-link" id="sidebarMapLink">
+                    <span class="sidebar-link-icon" data-icon="map"></span>
+                    <span>City Map</span>
+                </a>
+            </nav>
         </div>
 
-    </div>
-
-    </div>
-
-</header>
-
-
-<main class="container">
-
-    <section class="dashboard-welcome">
-
-        <h2>
-            Admin Dashboard
-        </h2>
-
-        <p>
-            Manage civic issue reports and monitor their status.
-        </p>
-
-    </section>
-
-
-    <!-- STATISTICS -->
-
-    <section class="stats-grid">
-
-        <div class="stat-card">
-
-            <h3 id="openCount">
-                0
-            </h3>
-
-            <p>
-                Open Issues
-            </p>
-
-        </div>
-
-
-        <div class="stat-card">
-
-            <h3 id="progressCount">
-                0
-            </h3>
-
-            <p>
-                In Progress
-            </p>
-
-        </div>
-
-
-        <div class="stat-card">
-
-            <h3 id="resolvedCount">
-                0
-            </h3>
-
-            <p>
-                Resolved
-            </p>
-
-        </div>
-
-    </section>
-
-
-    <!-- REPORTS -->
-
-    <section class="issues-section">
-
-        <div class="section-header">
-
-            <h2>
-                All Reports
-            </h2>
-
-            <button
-                type="button"
-                id="refreshButton"
-                class="auth-button">
-                🔄 Refresh
+        <div class="sidebar-footer">
+            <div class="sidebar-user-card">
+                <div class="sidebar-user-avatar" id="sidebarUserAvatar" style="background: #3b82f6;">A</div>
+                <div class="sidebar-user-meta">
+                    <div class="sidebar-user-name" id="sidebarUserName">Admin User</div>
+                    <div class="sidebar-user-role" id="sidebarUserRole" style="color: #3b82f6; font-weight: 700;">ADMIN</div>
+                </div>
+            </div>
+            <button type="button" id="sidebarLogoutBtn" class="location-button secondary btn-sidebar-logout">
+                <span data-icon="logout"></span>
+                <span>Logout</span>
             </button>
-
         </div>
+    </aside>
 
+    <!-- APP MAIN CONTENT WRAPPER -->
+    <div class="app-main">
 
-        <div
-            id="adminIssuesList"
-            class="issue-list">
+        <!-- MODERN TOPBAR -->
+        <header class="app-topbar">
+            <div class="topbar-search-box">
+                <span class="topbar-search-icon" data-icon="search"></span>
+                <input
+                    type="text"
+                    id="adminSearchInput"
+                    class="topbar-search-input"
+                    placeholder="Search issues, categories, reporters..."
+                >
+            </div>
 
-            <div class="empty-state">
+            <div class="topbar-actions">
+                <button type="button" class="btn-report-header btn-admin-export" id="exportBtn">
+                    <span>Export CSV</span>
+                </button>
 
-                <p>
-                    Loading reports...
+                <button
+                    type="button"
+                    id="themeToggleBtn"
+                    class="theme-toggle-btn"
+                    title="Toggle Dark / Light Mode"
+                    aria-label="Toggle Dark / Light Mode"
+                >
+                </button>
+
+                <div class="lang-selector-container notranslate" translate="no">
+                    <div class="lang-select-wrapper">
+                        <svg class="lang-globe-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="2" y1="12" x2="22" y2="12"></line>
+                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10z"></path>
+                        </svg>
+                        <select class="lang-select notranslate" aria-label="Choose Language">
+                            <option value="en">English</option>
+                            <option value="hi">हिन्दी (Hindi)</option>
+                            <option value="bn">বাংলা (Bengali)</option>
+                            <option value="mr">मराठी (Marathi)</option>
+                            <option value="te">తెలుగు (Telugu)</option>
+                            <option value="ta">தமிழ் (Tamil)</option>
+                            <option value="gu">ગુજરાતી (Gujarati)</option>
+                            <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
+                            <option value="ur">اردو (Urdu)</option>
+                            <option value="kn">ಕನ್ನಡ (Kannada)</option>
+                            <option value="ml">മലയാളം (Malayalam)</option>
+                            <option value="or">ଓଡ଼ିଆ (Odia)</option>
+                        </select>
+                        <svg class="lang-arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Profile Dropdown -->
+                <div class="profile-container">
+                    <button
+                        type="button"
+                        id="profileButton"
+                        class="profile-button"
+                    >
+                        <span id="profileInitial">A</span>
+                    </button>
+
+                    <div id="profileMenu" class="profile-menu">
+                        <div class="profile-info">
+                            <strong id="profileName">Admin</strong>
+                            <small id="profileEmail">admin@example.com</small>
+                            <span id="profileRole" class="profile-role">ADMIN</span>
+                        </div>
+                        <button type="button" id="adminOverviewButton"><span data-icon="admin"></span> <span>Admin Overview</span></button>
+                        <button type="button" id="communityButton"><span data-icon="globe"></span> <span>Community Issues</span></button>
+                        <button type="button" id="cityMapButton"><span data-icon="map"></span> <span>City Map</span></button>
+                        <button type="button" id="logoutButton" class="logout-button"><span data-icon="logout"></span> <span>Logout</span></button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- MAIN ADMIN CONTENT BODY -->
+        <main class="app-content" id="main-content">
+
+            <section class="dashboard-welcome" style="margin-bottom: 24px;">
+                <h2 style="font-size: 26px; font-weight: 800; color: var(--text);">
+                    Smart City Control Room
+                </h2>
+                <p style="color: var(--muted); font-size: 15px;">
+                    Monitor municipal complaints, track departmental resolution speeds, and update triage status.
                 </p>
+            </section>
 
-            </div>
+            <!-- 4 KPI STATS ROW -->
+            <section class="kpi-row">
+                <div class="kpi-card total">
+                    <div class="kpi-icon-box" data-icon="total"></div>
+                    <div class="kpi-data">
+                        <span class="kpi-label">Total Issues</span>
+                        <span class="kpi-value" id="totalCount">0</span>
+                    </div>
+                </div>
 
-        </div>
+                <div class="kpi-card open">
+                    <div class="kpi-icon-box" data-icon="warning"></div>
+                    <div class="kpi-data">
+                        <span class="kpi-label">Open Issues</span>
+                        <span class="kpi-value" id="openCount">0</span>
+                    </div>
+                </div>
 
-    </section>
+                <div class="kpi-card progress">
+                    <div class="kpi-icon-box" data-icon="clock"></div>
+                    <div class="kpi-data">
+                        <span class="kpi-label">In Progress</span>
+                        <span class="kpi-value" id="progressCount">0</span>
+                    </div>
+                </div>
 
-</main>
+                <div class="kpi-card resolved">
+                    <div class="kpi-icon-box" data-icon="check"></div>
+                    <div class="kpi-data">
+                        <span class="kpi-label">Resolved</span>
+                        <span class="kpi-value" id="resolvedCount">0</span>
+                    </div>
+                </div>
+            </section>
 
+            <!-- CATEGORY BREAKDOWN PROGRESS BARS -->
+            <section class="category-bars-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <div class="category-bars-title" style="margin-bottom: 0; display: flex; align-items: center; gap: 8px;">
+                        <span data-icon="dashboard"></span>
+                        <span>Category Resolution Breakdown</span>
+                    </div>
+                    <span style="font-size: 13px; color: var(--muted);" id="categoryBreakdownSubtext">Live department metrics</span>
+                </div>
+
+                <div class="category-bar-row">
+                    <div class="category-bar-header">
+                        <span>Road Damage & Potholes</span>
+                        <span id="catRoadPct">0% (0)</span>
+                    </div>
+                    <div class="category-bar-track">
+                        <div class="category-bar-fill road" id="catRoadBar" style="width: 0%;"></div>
+                    </div>
+                </div>
+
+                <div class="category-bar-row">
+                    <div class="category-bar-header">
+                        <span>Street Light & Electrical</span>
+                        <span id="catLightPct">0% (0)</span>
+                    </div>
+                    <div class="category-bar-track">
+                        <div class="category-bar-fill light" id="catLightBar" style="width: 0%;"></div>
+                    </div>
+                </div>
+
+                <div class="category-bar-row">
+                    <div class="category-bar-header">
+                        <span>Garbage & Solid Waste</span>
+                        <span id="catGarbagePct">0% (0)</span>
+                    </div>
+                    <div class="category-bar-track">
+                        <div class="category-bar-fill garbage" id="catGarbageBar" style="width: 0%;"></div>
+                    </div>
+                </div>
+
+                <div class="category-bar-row" style="margin-bottom: 0;">
+                    <div class="category-bar-header">
+                        <span>Water Leak & Drainage Overflow</span>
+                        <span id="catWaterPct">0% (0)</span>
+                    </div>
+                    <div class="category-bar-track">
+                        <div class="category-bar-fill water" id="catWaterBar" style="width: 0%;"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ISSUE MANAGEMENT TABLE / LIST -->
+            <section class="category-bars-card" style="padding: 24px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+                    <div>
+                        <h3 style="font-size: 19px; font-weight: 800; color: var(--text);">Issue Management</h3>
+                        <p style="color: var(--muted); font-size: 13.5px;">Triage, assign, or update status of citizen reports.</p>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                        <select id="adminStatusFilter" class="admin-filter-select">
+                            <option value="">All Statuses</option>
+                            <option value="OPEN">Open (Needs Action)</option>
+                            <option value="IN_PROGRESS">In Progress</option>
+                            <option value="RESOLVED">Resolved</option>
+                        </select>
+                        <select id="adminCategoryFilter" class="admin-filter-select">
+                            <option value="">All Categories</option>
+                            <option value="ROAD_DAMAGE">Road Damage & Potholes</option>
+                            <option value="STREETLIGHT">Street Light & Electrical</option>
+                            <option value="GARBAGE">Garbage & Solid Waste</option>
+                            <option value="WATER_LEAK">Water Leak & Drainage</option>
+                            <option value="OTHER">Other Issues</option>
+                        </select>
+                        <button
+                            type="button"
+                            id="refreshButton"
+                            class="auth-button"
+                            style="width: auto; height: 40px; padding: 0 18px; margin: 0; font-size: 14px; display: inline-flex; align-items: center; gap: 6px;"
+                        >
+                            <span data-icon="refresh"></span>
+                            <span>Refresh</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="adminIssuesList" class="issue-list">
+                    <div class="empty-state">
+                        <p>Loading reports...</p>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+</div>
+
+<!-- MOBILE BOTTOM NAVIGATION BAR -->
+<nav class="mobile-bottom-nav" aria-label="Mobile Navigation">
+    <a href="admin.html" class="mobile-nav-btn active">
+        <span class="mobile-nav-icon" data-icon="admin"></span>
+        <span>Admin</span>
+    </a>
+    <a href="issues.html" class="mobile-nav-btn">
+        <span class="mobile-nav-icon" data-icon="globe"></span>
+        <span>Issues</span>
+    </a>
+    <a href="issues.html?view=map" class="mobile-nav-btn">
+        <span class="mobile-nav-icon" data-icon="map"></span>
+        <span>City Map</span>
+    </a>
+</nav>
 
 <script src="language.js"></script>
 <script src="admin.js"></script>

@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="civicGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0284c7" />
+      <stop offset="100%" stop-color="#0369a1" />
+    </linearGradient>
+    <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#0284c7" />
+    </linearGradient>
+  </defs>
+  <!-- Background Rounded Rect -->
+  <rect width="512" height="512" rx="128" fill="url(#civicGrad)" />
+  
+  <!-- Outer Glow Circle -->
+  <circle cx="256" cy="256" r="190" fill="#ffffff" opacity="0.1" />
+  
+  <!-- Shield Outline -->
+  <path d="M256 90 L390 145 C390 270, 330 365, 256 422 C182 365, 122 270, 122 145 Z" fill="#ffffff" opacity="0.95" />
+  <path d="M256 110 L370 157 C370 260, 320 345, 256 398 C192 345, 142 260, 142 157 Z" fill="url(#shieldGrad)" />
+  
+  <!-- Road Pin & Hazard Icon inside Shield -->
+  <!-- Map Pin Body -->
+  <path d="M256 160 C220 160, 192 188, 192 224 C192 272, 256 335, 256 335 C256 335, 320 272, 320 224 C320 188, 292 160, 256 160 Z" fill="#ffffff" />
+  <circle cx="256" cy="224" r="26" fill="#0284c7" />
+  
+  <!-- Tool / Wrench Accent -->
+  <path d="M220 345 L292 345 L256 385 Z" fill="#f59e0b" />
+</svg>
